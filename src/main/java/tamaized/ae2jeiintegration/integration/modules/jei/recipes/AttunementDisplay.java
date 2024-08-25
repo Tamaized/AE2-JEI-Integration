@@ -1,4 +1,4 @@
-package tamaized.ae2jeiintegration.integration.modules.jei;
+package tamaized.ae2jeiintegration.integration.modules.jei.recipes;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

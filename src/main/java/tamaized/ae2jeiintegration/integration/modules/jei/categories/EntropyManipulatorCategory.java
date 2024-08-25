@@ -1,4 +1,4 @@
-package tamaized.ae2jeiintegration.integration.modules.jei;
+package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 
 import appeng.core.AELog;
 import appeng.core.AppEng;
@@ -9,10 +9,13 @@ import appeng.recipes.entropy.EntropyRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.helpers.IPlatformFluidHelper;
+import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -23,15 +26,14 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
-import tamaized.ae2jeiintegration.integration.modules.jei.widgets.View;
-import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Widget;
+import tamaized.ae2jeiintegration.integration.modules.jei.JEIPlugin;
+import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Label;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
 
-import java.util.List;
-
-public class EntropyManipulatorCategory extends ViewBasedCategory<RecipeHolder<EntropyRecipe>> {
+public class EntropyManipulatorCategory implements IRecipeCategory<RecipeHolder<EntropyRecipe>> {
     public static final RecipeType<RecipeHolder<EntropyRecipe>> TYPE = RecipeType.createFromVanilla(EntropyRecipe.TYPE);
 
+    private final WidgetFactory widgetFactory;
     private final IDrawable slotBackground;
     private final IDrawable background;
     private final IDrawable icon;
@@ -42,7 +44,6 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<RecipeHolder<E
     private final int centerX;
 
     public EntropyManipulatorCategory(IJeiHelpers helpers) {
-        super(helpers);
         var guiHelper = helpers.getGuiHelper();
         this.slotBackground = guiHelper.getSlotDrawable();
         this.background = guiHelper.createBlankDrawable(130, 50);
@@ -58,75 +59,74 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<RecipeHolder<E
         this.iconHeat = guiHelper.createDrawable(JEIPlugin.TEXTURE, 0, 68, 6, 6);
         this.iconCool = guiHelper.createDrawable(JEIPlugin.TEXTURE, 6, 68, 6, 6);
         this.centerX = background.getWidth() / 2;
+        this.widgetFactory = new WidgetFactory(helpers);
     }
 
     @Override
-    protected View getView(RecipeHolder<EntropyRecipe> holder) {
+    public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<EntropyRecipe> holder, IFocusGroup focuses) {
         EntropyRecipe recipe = holder.value();
-        return new View() {
-            @Override
-            public void createWidgets(WidgetFactory factory, List<Widget> widgets) {
-                var icon = switch (recipe.getMode()) {
-                    case HEAT -> iconHeat;
-                    case COOL -> iconCool;
-                };
-                var labelText = switch (recipe.getMode()) {
-                    case HEAT -> ItemModText.ENTROPY_MANIPULATOR_HEAT.text(EntropyManipulatorItem.ENERGY_PER_USE);
-                    case COOL -> ItemModText.ENTROPY_MANIPULATOR_COOL.text(EntropyManipulatorItem.ENERGY_PER_USE);
-                };
-                var interaction = switch (recipe.getMode()) {
-                    case HEAT -> ItemModText.RIGHT_CLICK.text();
-                    case COOL -> ItemModText.SHIFT_RIGHT_CLICK.text();
-                };
+        var input = builder.addSlot(RecipeIngredientRole.INPUT, centerX - 36, 15)
+            .setBackground(slotBackground, -1, -1);
+        var inputBlock = recipe.getInput().block().map(EntropyRecipe.BlockInput::block).orElse(null);
+        var inputFluid = recipe.getInput().fluid().map(EntropyRecipe.FluidInput::fluid).orElse(null);
+        setFluidOrBlockSlot(input, inputBlock, inputFluid);
 
-                var modeLabel = factory.label(centerX + 4, 2, labelText).bodyText();
-                widgets.add(modeLabel);
-                widgets.add(factory.drawable(modeLabel.getBounds().getX() - 9, 3, icon));
-                widgets.add(factory.unfilledArrow(centerX - 12, 14));
-                widgets.add(factory.label(centerX, 38, interaction).bodyText());
-            }
+        int x = centerX + 20;
 
-            @Override
-            public void buildSlots(IRecipeLayoutBuilder builder) {
-                var input = builder.addSlot(RecipeIngredientRole.INPUT, centerX - 36, 15)
-                        .setBackground(slotBackground, -1, -1);
-                var inputBlock = recipe.getInput().block().map(EntropyRecipe.BlockInput::block).orElse(null);
-                var inputFluid = recipe.getInput().fluid().map(EntropyRecipe.FluidInput::fluid).orElse(null);
-                setFluidOrBlockSlot(input, inputBlock, inputFluid);
+        // TODO clean this up to use the optionals properly
+        var outputBlock = recipe.getOutput().block().map(EntropyRecipe.BlockOutput::block).orElse(null);
+        var outputFluid = recipe.getOutput().fluid().map(EntropyRecipe.FluidOutput::fluid).orElse(null);
 
-                int x = centerX + 20;
+        if (outputBlock == Blocks.AIR
+            && (outputFluid == null || outputFluid == Fluids.EMPTY)) {
+            // If the recipe destroys the block and produces no fluid in return,
+            // show the input again, but overlay it with an X.
+            var destroyed = builder.addSlot(RecipeIngredientRole.RENDER_ONLY, x, 15)
+                .setBackground(slotBackground, -1, -1);
+            setFluidOrBlockSlot(destroyed, inputBlock, inputFluid);
+            destroyed.setOverlay(blockDestroyOverlay, 0, 0);
+            destroyed.addRichTooltipCallback((recipeSlotView, tooltip) ->
+                tooltip.add(ItemModText.CONSUMED.text().withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
+            );
+            x += 18;
+        } else if (outputBlock != null || outputFluid != null) {
+            var output = builder.addSlot(RecipeIngredientRole.OUTPUT, x, 15)
+                .setBackground(slotBackground, -1, -1);
+            setFluidOrBlockSlot(output, outputBlock, outputFluid);
+            x += 18;
+        }
 
-                // TODO clean this up to use the optionals properly
-                var outputBlock = recipe.getOutput().block().map(EntropyRecipe.BlockOutput::block).orElse(null);
-                var outputFluid = recipe.getOutput().fluid().map(EntropyRecipe.FluidOutput::fluid).orElse(null);
+        for (var drop : recipe.getDrops()) {
+            var output = builder.addSlot(RecipeIngredientRole.OUTPUT, x, 15)
+                .setBackground(slotBackground, -1, -1);
+            output.addItemStack(drop);
+            x += 18;
+        }
+    }
 
-                if (outputBlock == Blocks.AIR
-                        && (outputFluid == null || outputFluid == Fluids.EMPTY)) {
-                    // If the recipe destroys the block and produces no fluid in return,
-                    // show the input again, but overlay it with an X.
-                    var destroyed = builder.addSlot(RecipeIngredientRole.RENDER_ONLY, x, 15)
-                            .setBackground(slotBackground, -1, -1);
-                    setFluidOrBlockSlot(destroyed, inputBlock, inputFluid);
-                    destroyed.setOverlay(blockDestroyOverlay, 0, 0);
-                    destroyed.addRichTooltipCallback((recipeSlotView, tooltip) ->
-                        tooltip.add(ItemModText.CONSUMED.text().withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
-                    );
-                    x += 18;
-                } else if (outputBlock != null || outputFluid != null) {
-                    var output = builder.addSlot(RecipeIngredientRole.OUTPUT, x, 15)
-                            .setBackground(slotBackground, -1, -1);
-                    setFluidOrBlockSlot(output, outputBlock, outputFluid);
-                    x += 18;
-                }
+    @Override
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<EntropyRecipe> holder, IFocusGroup focuses) {
+        EntropyRecipe recipe = holder.value();
 
-                for (var drop : recipe.getDrops()) {
-                    var output = builder.addSlot(RecipeIngredientRole.OUTPUT, x, 15)
-                            .setBackground(slotBackground, -1, -1);
-                    output.addItemStack(drop);
-                    x += 18;
-                }
-            }
+        var icon = switch (recipe.getMode()) {
+            case HEAT -> iconHeat;
+            case COOL -> iconCool;
         };
+        var labelText = switch (recipe.getMode()) {
+            case HEAT -> ItemModText.ENTROPY_MANIPULATOR_HEAT.text(EntropyManipulatorItem.ENERGY_PER_USE);
+            case COOL -> ItemModText.ENTROPY_MANIPULATOR_COOL.text(EntropyManipulatorItem.ENERGY_PER_USE);
+        };
+        var interaction = switch (recipe.getMode()) {
+            case HEAT -> ItemModText.RIGHT_CLICK.text();
+            case COOL -> ItemModText.SHIFT_RIGHT_CLICK.text();
+        };
+
+        Label modeLabel = widgetFactory.label(centerX + 4, 2, labelText)
+            .bodyText();
+        builder.addWidget(modeLabel);
+        builder.addWidget(widgetFactory.drawable(modeLabel.getBounds().getX() - 9, 3, icon));
+        builder.addWidget(widgetFactory.unfilledArrow(centerX - 12, 14));
+        builder.addWidget(widgetFactory.label(centerX, 38, interaction).bodyText());
     }
 
     private void setFluidOrBlockSlot(IRecipeSlotBuilder slot, @Nullable Block block, @Nullable Fluid fluid) {

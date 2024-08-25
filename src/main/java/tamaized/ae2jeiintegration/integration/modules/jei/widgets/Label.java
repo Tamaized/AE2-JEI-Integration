@@ -1,18 +1,18 @@
 package tamaized.ae2jeiintegration.integration.modules.jei.widgets;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
-public class Label extends AbstractWidget implements Widget {
-    public final float x;
-    public final float y;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Label extends AE2RecipeWidget {
+    public final ScreenPosition position;
     public final Component text;
     private final Font font;
     public int color = -1;
@@ -21,11 +21,15 @@ public class Label extends AbstractWidget implements Widget {
     private LabelAlignment align = LabelAlignment.CENTER;
     private List<FormattedLine> formattedLines = null;
 
-    public Label(float x, float y, Component text) {
-        this.x = x;
-        this.y = y;
+    public Label(int x, int y, Component text) {
+        this.position = new ScreenPosition(x, y);
         this.text = text;
         this.font = Minecraft.getInstance().font;
+    }
+
+    @Override
+    public ScreenPosition getPosition() {
+        return position;
     }
 
     public Rect2i getBounds() {
@@ -39,11 +43,16 @@ public class Label extends AbstractWidget implements Widget {
             bottom = Math.max(bottom, (int) (formattedLine.y + formattedLine.height));
             right = Math.max(right, (int) (formattedLine.x + formattedLine.width));
         }
-        return new Rect2i(left, top, right - left, bottom - top);
+        int width = right - left;
+        int height = bottom - top;
+        left += position.x();
+        top += position.y();
+        return new Rect2i(left, top, width, height);
     }
 
+
     @Override
-    public void draw(GuiGraphics guiGraphics) {
+    public void draw(GuiGraphics guiGraphics, double mouseX, double mouseY) {
         for (var line : getLines()) {
             var font = Minecraft.getInstance().font;
             guiGraphics.drawString(font, line.text, (int) line.x, (int) line.y, color, shadow);
@@ -65,11 +74,6 @@ public class Label extends AbstractWidget implements Widget {
         return this;
     }
 
-    public Label tooltip(Component text) {
-        this.setTooltipLines(List.of(text));
-        return this;
-    }
-
     public Label noShadow() {
         shadow = false;
         return this;
@@ -81,23 +85,11 @@ public class Label extends AbstractWidget implements Widget {
         return this;
     }
 
-    @Override
-    public boolean hitTest(double x, double y) {
-        for (var line : getLines()) {
-            if (x >= line.x && x < line.x + line.width
-                    && y >= line.y && y < line.y + line.height) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private float getAlignedX(int width) {
         return switch (align) {
-            case LEFT -> x;
-            case CENTER -> x - width / 2f;
-            case RIGHT -> x - width;
+            case LEFT -> 0;
+            case CENTER -> -width / 2f;
+            case RIGHT -> -width;
         };
     }
 
@@ -124,7 +116,7 @@ public class Label extends AbstractWidget implements Widget {
             var formattedText = text.getVisualOrderText();
             var width = font.width(formattedText);
             formattedLines = List.of(
-                    new FormattedLine(formattedText, getAlignedX(width), y, width, font.lineHeight));
+                    new FormattedLine(formattedText, getAlignedX(width), 0, width, font.lineHeight));
         } else {
             var splitLines = font.split(text, maxWidth);
             var formattedLines = new ArrayList<FormattedLine>(splitLines.size());
@@ -134,7 +126,7 @@ public class Label extends AbstractWidget implements Widget {
                 formattedLines.add(new FormattedLine(
                         splitLine,
                         getAlignedX(width),
-                        y + i * font.lineHeight,
+                        i * font.lineHeight,
                         width,
                         font.lineHeight));
             }

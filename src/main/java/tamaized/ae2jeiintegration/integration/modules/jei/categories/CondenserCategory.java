@@ -1,4 +1,4 @@
-package tamaized.ae2jeiintegration.integration.modules.jei;
+package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 
 import appeng.api.config.CondenserOutput;
 import appeng.api.implementations.items.IStorageComponent;
@@ -15,7 +15,9 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
@@ -25,13 +27,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import tamaized.ae2jeiintegration.integration.modules.jei.drawables.IconDrawable;
+import tamaized.ae2jeiintegration.integration.modules.jei.widgets.DrawableWidget;
+import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-class CondenserCategory implements IRecipeCategory<CondenserOutput> {
+public class CondenserCategory implements IRecipeCategory<CondenserOutput> {
 
     private static final String TITLE_TRANSLATION_KEY = "block.ae2.condenser";
 
@@ -47,8 +52,11 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
 
     private final Map<CondenserOutput, IDrawable> buttonIcons;
     private final Map<CondenserOutput, ResourceLocation> resourceLocations;
+    private final WidgetFactory widgetFactory;
 
-    public CondenserCategory(IGuiHelper guiHelper) {
+    public CondenserCategory(IJeiHelpers jeiHelpers) {
+        IGuiHelper guiHelper = jeiHelpers.getGuiHelper();
+        this.widgetFactory = new WidgetFactory(jeiHelpers);
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, AEBlocks.CONDENSER.stack());
 
         ResourceLocation location = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "textures/guis/condenser.png");
@@ -110,10 +118,14 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
         this.progress.draw(guiGraphics);
         this.iconTrash.draw(guiGraphics);
         this.iconButton.draw(guiGraphics);
+    }
 
+    @Override
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, CondenserOutput recipe, IFocusGroup focuses) {
         var buttonIcon = this.buttonIcons.get(recipe);
         if (buttonIcon != null) {
-            buttonIcon.draw(guiGraphics);
+            DrawableWidget widget = widgetFactory.drawable(0, 0, buttonIcon);
+            builder.addWidget(widget);
         }
     }
 

@@ -1,4 +1,4 @@
-package tamaized.ae2jeiintegration.integration.modules.jei;
+package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 
 import appeng.core.AppEng;
 import appeng.core.definitions.AEBlocks;
@@ -19,7 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
-class InscriberRecipeCategory implements IRecipeCategory<RecipeHolder<InscriberRecipe>> {
+public class InscriberRecipeCategory implements IRecipeCategory<RecipeHolder<InscriberRecipe>> {
 
     private static final String TITLE_TRANSLATION_KEY = "block.ae2.inscriber";
 

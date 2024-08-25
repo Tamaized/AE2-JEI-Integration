@@ -57,6 +57,14 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.neoforged.fml.ModList;
 import tamaized.ae2jeiintegration.api.integrations.jei.IngredientConverters;
 import tamaized.ae2jeiintegration.integration.abstraction.JEIFacade;
+import tamaized.ae2jeiintegration.integration.modules.jei.categories.AttunementCategory;
+import tamaized.ae2jeiintegration.integration.modules.jei.categories.CertusGrowthCategory;
+import tamaized.ae2jeiintegration.integration.modules.jei.categories.ChargerCategory;
+import tamaized.ae2jeiintegration.integration.modules.jei.categories.CondenserCategory;
+import tamaized.ae2jeiintegration.integration.modules.jei.categories.EntropyManipulatorCategory;
+import tamaized.ae2jeiintegration.integration.modules.jei.categories.InscriberRecipeCategory;
+import tamaized.ae2jeiintegration.integration.modules.jei.categories.TransformCategory;
+import tamaized.ae2jeiintegration.integration.modules.jei.recipes.AttunementDisplay;
 import tamaized.ae2jeiintegration.integration.modules.jei.subtypes.FacadeSubtypeInterpreter;
 import tamaized.ae2jeiintegration.integration.modules.jei.transfer.EncodePatternTransferHandler;
 import tamaized.ae2jeiintegration.integration.modules.jei.transfer.UseCraftingRecipeTransfer;
@@ -95,7 +103,7 @@ public class JEIPlugin implements IModPlugin {
         var jeiHelpers = registry.getJeiHelpers();
         registry.addRecipeCategories(
                 new TransformCategory(jeiHelpers),
-                new CondenserCategory(jeiHelpers.getGuiHelper()),
+                new CondenserCategory(jeiHelpers),
                 new InscriberRecipeCategory(jeiHelpers.getGuiHelper()),
                 new ChargerCategory(jeiHelpers),
                 new AttunementCategory(jeiHelpers),

@@ -1,4 +1,4 @@
-package tamaized.ae2jeiintegration.integration.modules.jei;
+package tamaized.ae2jeiintegration.integration.modules.jei.drawables;
 
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -10,12 +10,12 @@ import appeng.client.gui.style.Blitter;
 /**
  * Creates {@link IDrawable} from {@link Icon}
  */
-final class IconDrawable implements IDrawable {
+public final class IconDrawable implements IDrawable {
     private final Blitter blitter;
     private final int x;
     private final int y;
 
-    IconDrawable(Icon icon, int x, int y) {
+    public IconDrawable(Icon icon, int x, int y) {
         this.blitter = icon.getBlitter();
         this.x = x;
         this.y = y;
