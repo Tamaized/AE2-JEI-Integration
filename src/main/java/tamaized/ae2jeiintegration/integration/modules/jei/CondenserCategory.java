@@ -157,7 +157,11 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
                     return;
             }
 
-            tooltip.add(Component.translatable(key));
+            String tooltipString = Component.translatable(key, recipe.requiredPower).getString();
+            String[] tooltipLines = tooltipString.split("\n");
+            for (String line : tooltipLines) {
+                tooltip.add(Component.literal(line));
+            }
         }
     }
 
