@@ -1,11 +1,10 @@
 package tamaized.ae2jeiintegration.integration.modules.jei.widgets;
 
-import java.util.List;
-
+import mezz.jei.api.gui.drawable.IDrawable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
-import mezz.jei.api.gui.drawable.IDrawable;
+import java.util.List;
 
 public class DrawableWidget extends AbstractWidget {
     private final IDrawable drawable;

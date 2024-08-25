@@ -1,21 +1,16 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
+import appeng.api.config.CondenserOutput;
+import appeng.api.implementations.items.IStorageComponent;
+import appeng.blockentity.misc.CondenserBlockEntity;
+import appeng.client.gui.Icon;
+import appeng.core.AppEng;
+import appeng.core.definitions.AEBlocks;
+import appeng.core.definitions.AEItems;
 import appeng.core.localization.ButtonToolTips;
-import com.google.common.collect.Lists;
-
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
@@ -25,14 +20,15 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
-import appeng.api.config.CondenserOutput;
-import appeng.api.implementations.items.IStorageComponent;
-import appeng.blockentity.misc.CondenserBlockEntity;
-import appeng.client.gui.Icon;
-import appeng.core.AppEng;
-import appeng.core.definitions.AEBlocks;
-import appeng.core.definitions.AEItems;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 class CondenserCategory implements IRecipeCategory<CondenserOutput> {
 
@@ -146,9 +142,7 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
     }
 
     @Override
-    public List<Component> getTooltipStrings(CondenserOutput recipe, IRecipeSlotsView recipeSlotsView, double mouseX,
-            double mouseY) {
-
+    public void getTooltip(ITooltipBuilder tooltip, CondenserOutput recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
         if (mouseX >= 80 && mouseX < 80 + 16 && mouseY >= 26 && mouseY < 26 + 16) {
             String key;
 
@@ -160,12 +154,11 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
                     key = ButtonToolTips.Singularity.getTranslationKey();
                     break;
                 default:
-                    return Collections.emptyList();
+                    return;
             }
 
-            return Lists.newArrayList(Component.translatable(key));
+            tooltip.add(Component.translatable(key));
         }
-        return Collections.emptyList();
     }
 
 }

@@ -54,9 +54,10 @@ public final class IngredientConverters {
     /**
      * @return The currently registered converter for the given type or null.
      */
-    @SuppressWarnings("unchecked")
     @Nullable
     public static synchronized <T> IngredientConverter<T> getConverter(IIngredientType<T> type) {
-        return (IngredientConverter<T>) convertersByType.get(type);
+        @SuppressWarnings("unchecked")
+        IngredientConverter<T> cast = (IngredientConverter<T>) convertersByType.get(type);
+        return cast;
     }
 }

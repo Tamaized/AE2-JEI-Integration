@@ -25,7 +25,7 @@ import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
  */
 public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory.Page> {
 
-    public static RecipeType<Page> TYPE = RecipeType.create(AppEng.MOD_ID, "certus_growth", Page.class);
+    public static final RecipeType<Page> TYPE = RecipeType.create(AppEng.MOD_ID, "certus_growth", Page.class);
 
     private final List<ItemStack> BUDDING_QUARTZ_VARIANTS = List.of(
             AEBlocks.DAMAGED_BUDDING_QUARTZ.stack(),

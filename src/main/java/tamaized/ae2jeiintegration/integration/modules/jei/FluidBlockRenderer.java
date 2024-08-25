@@ -3,6 +3,7 @@ package tamaized.ae2jeiintegration.integration.modules.jei;
 import java.util.List;
 
 import appeng.integration.modules.itemlists.FluidBlockRendering;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
@@ -17,9 +18,16 @@ public class FluidBlockRenderer implements IIngredientRenderer<FluidStack> {
         FluidBlockRendering.render(guiGraphics, fluid, 0, 0, 16, 16);
     }
 
-    @Override
+    @SuppressWarnings("removal")
+	@Override
     public List<Component> getTooltip(FluidStack ingredient, TooltipFlag tooltipFlag) {
         // JEI adds the mod name automatically
-        return List.of(ingredient.getDisplayName());
+        return List.of(ingredient.getHoverName());
+    }
+
+    @Override
+    public void getTooltip(ITooltipBuilder tooltip, FluidStack ingredient, TooltipFlag tooltipFlag) {
+        // JEI adds the mod name automatically
+        tooltip.add(ingredient.getHoverName());
     }
 }

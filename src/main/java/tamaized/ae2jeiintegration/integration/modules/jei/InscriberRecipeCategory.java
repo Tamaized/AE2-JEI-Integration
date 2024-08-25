@@ -1,9 +1,8 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-
+import appeng.core.AppEng;
+import appeng.core.definitions.AEBlocks;
+import appeng.recipes.handlers.InscriberRecipe;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -15,17 +14,16 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
-import appeng.core.AppEng;
-import appeng.core.definitions.AEBlocks;
-import appeng.recipes.handlers.InscriberRecipe;
-
-class InscriberRecipeCategory implements IRecipeCategory<InscriberRecipe> {
+class InscriberRecipeCategory implements IRecipeCategory<RecipeHolder<InscriberRecipe>> {
 
     private static final String TITLE_TRANSLATION_KEY = "block.ae2.inscriber";
 
-    public static final RecipeType<InscriberRecipe> RECIPE_TYPE = RecipeType.create(AppEng.MOD_ID, "inscriber",
-            InscriberRecipe.class);
+    public static final RecipeType<RecipeHolder<InscriberRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(InscriberRecipe.TYPE);
 
     private final IDrawable background;
 
@@ -46,7 +44,7 @@ class InscriberRecipeCategory implements IRecipeCategory<InscriberRecipe> {
     }
 
     @Override
-    public RecipeType<InscriberRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<InscriberRecipe>> getRecipeType() {
         return RECIPE_TYPE;
     }
 
@@ -61,7 +59,8 @@ class InscriberRecipeCategory implements IRecipeCategory<InscriberRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, InscriberRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<InscriberRecipe> holder, IFocusGroup focuses) {
+        InscriberRecipe recipe = holder.value();
         builder.addSlot(RecipeIngredientRole.INPUT, 3, 3)
                 .setSlotName("top")
                 .addIngredients(recipe.getTopOptional());
@@ -82,8 +81,13 @@ class InscriberRecipeCategory implements IRecipeCategory<InscriberRecipe> {
     }
 
     @Override
-    public void draw(InscriberRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX,
+    public void draw(RecipeHolder<InscriberRecipe> holder, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX,
             double mouseY) {
         this.progress.draw(guiGraphics);
+    }
+
+    @Override
+    public ResourceLocation getRegistryName(RecipeHolder<InscriberRecipe> holder) {
+        return holder.id();
     }
 }

@@ -1,29 +1,27 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import java.util.List;
-
-import net.minecraft.network.chat.Component;
-
+import appeng.blockentity.misc.ChargerBlockEntity;
+import appeng.blockentity.misc.CrankBlockEntity;
+import appeng.core.definitions.AEBlocks;
+import appeng.recipes.handlers.ChargerRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
-
-import appeng.blockentity.misc.ChargerBlockEntity;
-import appeng.blockentity.misc.CrankBlockEntity;
-import appeng.core.AppEng;
-import appeng.core.definitions.AEBlocks;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.View;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Widget;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
-import appeng.recipes.handlers.ChargerRecipe;
 
-public class ChargerCategory extends ViewBasedCategory<ChargerRecipe> {
+import java.util.List;
 
-    public static RecipeType<ChargerRecipe> RECIPE_TYPE = RecipeType.create(AppEng.MOD_ID, "charger",
-            ChargerRecipe.class);
+public class ChargerCategory extends ViewBasedCategory<RecipeHolder<ChargerRecipe>> {
+
+    public static final RecipeType<RecipeHolder<ChargerRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(ChargerRecipe.TYPE);
     private final IDrawableStatic background;
     private final IDrawable icon;
     private final IDrawable slotBackground;
@@ -37,7 +35,7 @@ public class ChargerCategory extends ViewBasedCategory<ChargerRecipe> {
     }
 
     @Override
-    public RecipeType<ChargerRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<ChargerRecipe>> getRecipeType() {
         return RECIPE_TYPE;
     }
 
@@ -57,7 +55,8 @@ public class ChargerCategory extends ViewBasedCategory<ChargerRecipe> {
     }
 
     @Override
-    protected View getView(ChargerRecipe recipe) {
+    protected View getView(RecipeHolder<ChargerRecipe> holder) {
+        ChargerRecipe recipe = holder.value();
         return new View() {
             @Override
             public void buildSlots(IRecipeLayoutBuilder builder) {
@@ -88,5 +87,10 @@ public class ChargerCategory extends ViewBasedCategory<ChargerRecipe> {
                         .alignLeft());
             }
         };
+    }
+
+    @Override
+    public ResourceLocation getRegistryName(RecipeHolder<ChargerRecipe> holder) {
+        return holder.id();
     }
 }

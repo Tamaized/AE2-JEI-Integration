@@ -21,18 +21,6 @@ public final class GenericEntryStackHelper {
     }
 
     @Nullable
-    public static GenericStack ingredientToStack(Object ingredient) {
-        for (var converter : IngredientConverters.getConverters()) {
-            var stack = tryConvertToStack(converter, ingredient);
-            if (stack != null) {
-                return stack;
-            }
-        }
-
-        return null;
-    }
-
-    @Nullable
     public static <T> GenericStack ingredientToStack(IIngredientType<T> type, T ingredient) {
         var converter = IngredientConverters.getConverter(type);
         if (converter != null) {
@@ -88,27 +76,5 @@ public final class GenericEntryStackHelper {
                 .map(GenericEntryStackHelper::ingredientToStack)
                 .filter(Objects::nonNull)
                 .toList();
-    }
-
-    @Nullable
-    private static <T> GenericStack tryConvertToStack(IngredientConverter<T> converter, Object ingredient) {
-        var ingredientClass = converter.getIngredientType().getIngredientClass();
-        if (ingredientClass.isInstance(ingredient)) {
-            return converter.getStackFromIngredient(ingredientClass.cast(ingredient));
-        }
-        return null;
-    }
-
-    @Nullable
-    private static <T, U> GenericStack tryConvertTypedToStack(IngredientConverter<T> converter,
-            IIngredientType<U> ingredientType, U ingredient) {
-        if (converter.getIngredientType().equals(ingredientType)) {
-            return converter.getIngredientType()
-                    .castIngredient(ingredient)
-                    .map(converter::getStackFromIngredient)
-                    .orElse(null);
-        } else {
-            return null;
-        }
     }
 }

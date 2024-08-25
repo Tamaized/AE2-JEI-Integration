@@ -1,30 +1,31 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import appeng.api.ids.AEComponents;
+import appeng.api.config.CondenserOutput;
+import appeng.api.features.P2PTunnelAttunementInternal;
+import appeng.client.gui.AEBaseScreen;
+import appeng.client.gui.StackWithBounds;
+import appeng.client.gui.implementations.InscriberScreen;
+import appeng.core.AEConfig;
+import appeng.core.AppEng;
+import appeng.core.FacadeCreativeTab;
+import appeng.core.definitions.AEBlocks;
+import appeng.core.definitions.AEItems;
+import appeng.core.definitions.AEParts;
+import appeng.core.definitions.ItemDefinition;
+import appeng.core.localization.GuiText;
+import appeng.core.localization.ItemModText;
 import appeng.integration.abstraction.ItemListMod;
+import appeng.items.parts.FacadeItem;
+import appeng.menu.me.items.CraftingTermMenu;
+import appeng.menu.me.items.PatternEncodingTermMenu;
+import appeng.menu.me.items.WirelessCraftingTermMenu;
+import appeng.recipes.entropy.EntropyRecipe;
+import appeng.recipes.handlers.ChargerRecipe;
+import appeng.recipes.handlers.InscriberRecipe;
+import appeng.recipes.transform.TransformRecipe;
 import com.google.common.collect.ImmutableList;
-
 import de.mari_023.ae2wtlib.wct.WCTMenu;
 import de.mari_023.ae2wtlib.wet.WETMenu;
-import me.shedaniel.rei.plugincompatibilities.api.REIPluginCompatIgnore;
-import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
-
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -41,38 +42,30 @@ import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
-
-import appeng.api.config.CondenserOutput;
-import appeng.api.features.P2PTunnelAttunementInternal;
-import appeng.client.gui.AEBaseScreen;
-import appeng.client.gui.StackWithBounds;
-import appeng.client.gui.implementations.InscriberScreen;
-import appeng.core.AEConfig;
-import appeng.core.AppEng;
-import appeng.core.FacadeCreativeTab;
-import appeng.core.definitions.AEBlocks;
-import appeng.core.definitions.AEItems;
-import appeng.core.definitions.AEParts;
-import appeng.core.definitions.ItemDefinition;
-import appeng.core.localization.GuiText;
-import appeng.core.localization.ItemModText;
-import appeng.items.parts.FacadeItem;
-import appeng.menu.me.items.CraftingTermMenu;
-import appeng.menu.me.items.PatternEncodingTermMenu;
-import appeng.menu.me.items.WirelessCraftingTermMenu;
-import appeng.recipes.entropy.EntropyRecipe;
-import appeng.recipes.handlers.ChargerRecipe;
-import appeng.recipes.handlers.InscriberRecipe;
-import appeng.recipes.transform.TransformRecipe;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.neoforged.fml.ModList;
 import tamaized.ae2jeiintegration.api.integrations.jei.IngredientConverters;
 import tamaized.ae2jeiintegration.integration.abstraction.JEIFacade;
+import tamaized.ae2jeiintegration.integration.modules.jei.subtypes.FacadeSubtypeInterpreter;
 import tamaized.ae2jeiintegration.integration.modules.jei.transfer.EncodePatternTransferHandler;
 import tamaized.ae2jeiintegration.integration.modules.jei.transfer.UseCraftingRecipeTransfer;
-import tamaized.ae2jeiintegration.mixin.RecipeManagerAccessor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @JeiPlugin
-@REIPluginCompatIgnore
 public class JEIPlugin implements IModPlugin {
     public static final ResourceLocation TEXTURE = AppEng.makeId("textures/guis/jei.png");
 
@@ -92,13 +85,7 @@ public class JEIPlugin implements IModPlugin {
 
     @Override
     public void registerItemSubtypes(ISubtypeRegistration subtypeRegistry) {
-        subtypeRegistry.registerSubtypeInterpreter(AEItems.FACADE.asItem(), (itemStack, context) -> {
-            var facadeItem = itemStack.get(AEComponents.FACADE_ITEM);
-            if (facadeItem == null) {
-                return IIngredientSubtypeInterpreter.NONE;
-            }
-            return facadeItem.value().builtInRegistryHolder().key().location().toString();
-        });
+        subtypeRegistry.registerSubtypeInterpreter(AEItems.FACADE.asItem(), FacadeSubtypeInterpreter.INSTANCE);
     }
 
     @Override
@@ -143,18 +130,16 @@ public class JEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
-        RecipeManagerAccessor rma = (RecipeManagerAccessor)recipeManager;
-        registration.addRecipes(InscriberRecipeCategory.RECIPE_TYPE,
-                rma.invokeByType(InscriberRecipe.TYPE).stream().map(RecipeHolder::value).toList());
-        registration.addRecipes(ChargerCategory.RECIPE_TYPE,
-                rma.invokeByType(ChargerRecipe.TYPE).stream().map(RecipeHolder::value).toList());
+        ClientLevel level = Minecraft.getInstance().level;
+        assert level != null;
+        RecipeManager recipeManager = level.getRecipeManager();
+
+        registration.addRecipes(InscriberRecipeCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(InscriberRecipe.TYPE));
+        registration.addRecipes(ChargerCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(ChargerRecipe.TYPE));
         registration.addRecipes(CondenserCategory.RECIPE_TYPE,
                 ImmutableList.of(CondenserOutput.MATTER_BALLS, CondenserOutput.SINGULARITY));
-        registration.addRecipes(EntropyManipulatorCategory.TYPE,
-                rma.invokeByType(EntropyRecipe.TYPE).stream().map(RecipeHolder::value).toList());
-        registration.addRecipes(TransformCategory.RECIPE_TYPE,
-                rma.invokeByType(TransformRecipe.TYPE).stream().map(RecipeHolder::value).toList());
+        registration.addRecipes(EntropyManipulatorCategory.TYPE, recipeManager.getAllRecipesFor(EntropyRecipe.TYPE));
+        registration.addRecipes(TransformCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(TransformRecipe.TYPE));
 
         registerP2PAttunement(registration);
         registerDescriptions(registration);

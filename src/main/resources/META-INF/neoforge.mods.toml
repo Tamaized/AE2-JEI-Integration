@@ -2,9 +2,6 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
-[[mixins]]
-config="ae2jeiintegration.mixins.json"
-
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
@@ -15,13 +12,13 @@ description='''${mod_description}'''
 [[dependencies.${mod_id}]]
     modId="ae2"
     type="required"
-    versionRange="[13,)"
+    versionRange="${ae2_version_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.${mod_id}]]
     modId="jei"
     type="required"
-    versionRange="[14,)"
+    versionRange="${jei_version_range}"
     ordering="NONE"
     side="BOTH"

@@ -1,42 +1,38 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import java.util.List;
-
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
-
+import appeng.core.definitions.AEBlocks;
+import appeng.core.definitions.AEItems;
+import appeng.core.localization.ItemModText;
+import appeng.recipes.transform.TransformRecipe;
 import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.helpers.IPlatformFluidHelper;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
-
-import appeng.core.AppEng;
-import appeng.core.definitions.AEBlocks;
-import appeng.core.definitions.AEItems;
-import appeng.core.localization.ItemModText;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.block.Blocks;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.View;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Widget;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
-import appeng.recipes.transform.TransformRecipe;
 
-public class TransformCategory extends ViewBasedCategory<TransformRecipe> {
+import java.util.List;
 
-    public static final RecipeType<TransformRecipe> RECIPE_TYPE = RecipeType.create(AppEng.MOD_ID,
-            "item_transformation", TransformRecipe.class);
+public class TransformCategory extends ViewBasedCategory<RecipeHolder<TransformRecipe>> {
+
+    public static final RecipeType<RecipeHolder<TransformRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(TransformRecipe.TYPE);
 
     private final IDrawable icon;
 
     private final IDrawable background;
 
-    private final IDrawable arrow;
-
-    private final IDrawable slotBackground;
+	private final IDrawable slotBackground;
 
     private final IPlatformFluidHelper<?> fluidHelper;
 
@@ -49,13 +45,12 @@ public class TransformCategory extends ViewBasedCategory<TransformRecipe> {
         slotBackground = guiHelper.createDrawable(JEIPlugin.TEXTURE, 0, 34, 18, 18);
         icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
                 AEItems.CERTUS_QUARTZ_CRYSTAL_CHARGED.stack());
-        arrow = guiHelper.createDrawable(JEIPlugin.TEXTURE, 0, 17, 24, 17);
         fluidHelper = helpers.getPlatformFluidHelper();
         fluidRenderer = new FluidBlockRenderer();
     }
 
     @Override
-    public RecipeType<TransformRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<TransformRecipe>> getRecipeType() {
         return RECIPE_TYPE;
     }
 
@@ -70,8 +65,9 @@ public class TransformCategory extends ViewBasedCategory<TransformRecipe> {
     }
 
     @Override
-    protected View getView(TransformRecipe recipe) {
+    protected View getView(RecipeHolder<TransformRecipe> holder) {
         int yOffset = 23;
+        TransformRecipe recipe = holder.value();
 
         return new View() {
             @Override
@@ -148,4 +144,8 @@ public class TransformCategory extends ViewBasedCategory<TransformRecipe> {
         return ItemModText.TRANSFORM_CATEGORY.text();
     }
 
+    @Override
+    public ResourceLocation getRegistryName(RecipeHolder<TransformRecipe> holder) {
+        return holder.id();
+    }
 }

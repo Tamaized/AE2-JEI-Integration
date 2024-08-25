@@ -1,9 +1,7 @@
 package tamaized.ae2jeiintegration.integration.modules.jei.widgets;
 
-import java.util.List;
-
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
 
 public interface Widget {
     void draw(GuiGraphics guiGraphics);
@@ -12,7 +10,7 @@ public interface Widget {
         return false;
     }
 
-    default List<Component> getTooltipLines() {
-        return List.of();
+    default boolean getTooltipLines(ITooltipBuilder tooltipBuilder) {
+        return false;
     }
 }

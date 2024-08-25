@@ -1,5 +1,31 @@
 package tamaized.ae2jeiintegration.integration.modules.jei.transfer;
 
+import appeng.api.stacks.GenericStack;
+import appeng.core.localization.ItemModText;
+import appeng.integration.modules.itemlists.EncodingHelper;
+import appeng.integration.modules.itemlists.TransferHelper;
+import appeng.menu.me.common.GridInventoryEntry;
+import appeng.menu.me.items.PatternEncodingTermMenu;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.ingredient.IRecipeSlotView;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.transfer.IRecipeTransferError;
+import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
+import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
+import mezz.jei.api.runtime.IIngredientVisibility;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import org.jetbrains.annotations.Nullable;
+import tamaized.ae2jeiintegration.integration.abstraction.JEIFacade;
+import tamaized.ae2jeiintegration.integration.modules.jei.GenericEntryStackHelper;
+import tamaized.ae2jeiintegration.integration.modules.jei.JEIPlugin;
+import tamaized.ae2jeiintegration.integration.modules.jei.JeiRuntimeAdapter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,43 +33,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import appeng.integration.modules.itemlists.EncodingHelper;
-import appeng.integration.modules.itemlists.TransferHelper;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
-
-import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.gui.ingredient.IRecipeSlotView;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
-import mezz.jei.api.recipe.transfer.IRecipeTransferError;
-import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
-import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
-import mezz.jei.api.runtime.IIngredientVisibility;
-
-import appeng.api.stacks.GenericStack;
-import appeng.core.localization.ItemModText;
-import appeng.menu.me.common.GridInventoryEntry;
-import appeng.menu.me.items.PatternEncodingTermMenu;
-import tamaized.ae2jeiintegration.integration.abstraction.JEIFacade;
-import tamaized.ae2jeiintegration.integration.modules.jei.GenericEntryStackHelper;
-import tamaized.ae2jeiintegration.integration.modules.jei.JEIPlugin;
-import tamaized.ae2jeiintegration.integration.modules.jei.JeiRuntimeAdapter;
-
 /**
- * Handles encoding patterns in the {@link PatternEncodingTermMenu} by clicking the + button on recipes shown in REI (or
- * JEI).
+ * Handles encoding patterns in the {@link PatternEncodingTermMenu} by clicking the + button on recipes shown in JEI
  */
 public class EncodePatternTransferHandler<T extends PatternEncodingTermMenu>
         extends AbstractTransferHandler
-        implements IRecipeTransferHandler<T, Object> {
+        implements IUniversalRecipeTransferHandler<T> {
     private static final int CRAFTING_GRID_WIDTH = 3;
     private static final int CRAFTING_GRID_HEIGHT = 3;
 
@@ -77,7 +72,7 @@ public class EncodePatternTransferHandler<T extends PatternEncodingTermMenu>
 
         // Crafting recipe slots are not grouped, hence they must fit into the 3x3 grid.
         boolean craftingRecipe = EncodingHelper.isSupportedCraftingRecipe(recipe);
-        if (craftingRecipe && !fitsIn3x3Grid(recipe, slotsView)) {
+        if (craftingRecipe && !fitsIn3x3Grid(recipe)) {
             return helper.createUserErrorWithTooltip(ItemModText.RECIPE_TOO_LARGE.text());
         }
 
@@ -158,12 +153,6 @@ public class EncodePatternTransferHandler<T extends PatternEncodingTermMenu>
     @Override
     public Class<? extends T> getContainerClass() {
         return menuClass;
-    }
-
-    @Override
-    public RecipeType<Object> getRecipeType() {
-        // This is not actually used, as we register with JEI as a universal handler
-        return null;
     }
 
     private record ErrorRenderer(List<IRecipeSlotView> craftableSlots) implements IRecipeTransferError {

@@ -1,15 +1,11 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import java.util.List;
-
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
-
+import appeng.core.AELog;
+import appeng.core.AppEng;
+import appeng.core.definitions.AEItems;
+import appeng.core.localization.ItemModText;
+import appeng.items.tools.powered.EntropyManipulatorItem;
+import appeng.recipes.entropy.EntropyRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -17,20 +13,24 @@ import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.helpers.IPlatformFluidHelper;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
-
-import appeng.core.AELog;
-import appeng.core.AppEng;
-import appeng.core.definitions.AEItems;
-import appeng.core.localization.ItemModText;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import org.jetbrains.annotations.Nullable;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.View;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Widget;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
-import appeng.items.tools.powered.EntropyManipulatorItem;
-import appeng.recipes.entropy.EntropyRecipe;
 
-public class EntropyManipulatorCategory extends ViewBasedCategory<EntropyRecipe> {
-    public static final RecipeType<EntropyRecipe> TYPE = RecipeType.create(AppEng.MOD_ID, "entropy",
-            EntropyRecipe.class);
+import java.util.List;
+
+public class EntropyManipulatorCategory extends ViewBasedCategory<RecipeHolder<EntropyRecipe>> {
+    public static final RecipeType<RecipeHolder<EntropyRecipe>> TYPE = RecipeType.createFromVanilla(EntropyRecipe.TYPE);
 
     private final IDrawable slotBackground;
     private final IDrawable background;
@@ -61,7 +61,8 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<EntropyRecipe>
     }
 
     @Override
-    protected View getView(EntropyRecipe recipe) {
+    protected View getView(RecipeHolder<EntropyRecipe> holder) {
+        EntropyRecipe recipe = holder.value();
         return new View() {
             @Override
             public void createWidgets(WidgetFactory factory, List<Widget> widgets) {
@@ -107,9 +108,9 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<EntropyRecipe>
                             .setBackground(slotBackground, -1, -1);
                     setFluidOrBlockSlot(destroyed, inputBlock, inputFluid);
                     destroyed.setOverlay(blockDestroyOverlay, 0, 0);
-                    destroyed.addTooltipCallback((recipeSlotView, tooltip) -> {
-                        tooltip.add(ItemModText.CONSUMED.text().withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
-                    });
+                    destroyed.addRichTooltipCallback((recipeSlotView, tooltip) ->
+                        tooltip.add(ItemModText.CONSUMED.text().withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
+                    );
                     x += 18;
                 } else if (outputBlock != null || outputFluid != null) {
                     var output = builder.addSlot(RecipeIngredientRole.OUTPUT, x, 15)
@@ -128,7 +129,7 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<EntropyRecipe>
         };
     }
 
-    private void setFluidOrBlockSlot(IRecipeSlotBuilder slot, Block block, Fluid fluid) {
+    private void setFluidOrBlockSlot(IRecipeSlotBuilder slot, @Nullable Block block, @Nullable Fluid fluid) {
         if (fluid != null) {
             // The volume does assume BUCKET == BLOCK in terms of volume. But most of the time this should be true.
 
@@ -143,10 +144,6 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<EntropyRecipe>
                     slot.addFluidStack(fluid, fluidHelper.bucketVolume());
                     AELog.warn("Don't know how to get the source fluid for %s", fluid);
                 }
-                slot.addTooltipCallback((recipeSlotView, tooltip) -> {
-                    var firstLine = tooltip.get(0);
-                    tooltip.set(0, ItemModText.FLOWING_FLUID_NAME.text(firstLine));
-                });
             } else {
                 slot.addFluidStack(fluid, fluidHelper.bucketVolume());
             }
@@ -156,7 +153,7 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<EntropyRecipe>
     }
 
     @Override
-    public RecipeType<EntropyRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<EntropyRecipe>> getRecipeType() {
         return TYPE;
     }
 
@@ -173,5 +170,10 @@ public class EntropyManipulatorCategory extends ViewBasedCategory<EntropyRecipe>
     @Override
     public IDrawable getIcon() {
         return icon;
+    }
+
+    @Override
+    public ResourceLocation getRegistryName(RecipeHolder<EntropyRecipe> holder) {
+        return holder.id();
     }
 }

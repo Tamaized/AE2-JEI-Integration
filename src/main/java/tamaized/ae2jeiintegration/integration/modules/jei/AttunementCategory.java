@@ -1,23 +1,20 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import java.util.Collections;
-import java.util.List;
-
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
-
+import appeng.core.AppEng;
+import appeng.core.definitions.AEParts;
+import appeng.core.localization.ItemModText;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
-
-import appeng.core.AppEng;
-import appeng.core.definitions.AEParts;
-import appeng.core.localization.ItemModText;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.View;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Widget;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
+
+import java.util.List;
 
 public class AttunementCategory extends ViewBasedCategory<AttunementDisplay> {
 
@@ -67,8 +64,10 @@ public class AttunementCategory extends ViewBasedCategory<AttunementDisplay> {
                 builder.addSlot(RecipeIngredientRole.INPUT, x + 4, y + 5)
                         .setBackground(slotBackground, -1, -1)
                         .addIngredients(recipe.inputs())
-                        .addTooltipCallback((recipeSlotView, tooltip) -> {
-                            Collections.addAll(tooltip, recipe.description());
+                        .addRichTooltipCallback((recipeSlotView, tooltip) -> {
+                            for (Component line : recipe.description()) {
+                                tooltip.add(line);
+                            }
                         });
                 builder.addSlot(RecipeIngredientRole.OUTPUT, x + 61, y + 5)
                         .setBackground(slotBackground, -1, -1)

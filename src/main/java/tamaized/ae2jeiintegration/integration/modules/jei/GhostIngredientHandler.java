@@ -60,7 +60,6 @@ class GhostIngredientHandler implements IGhostIngredientHandler<AEBaseScreen> {
     /**
      * Returns possible drop-targets for ghost items.
      */
-    @SuppressWarnings("unchecked")
     private static <I> void addItemStackTargets(AEBaseScreen<?> gui, List<Target<I>> targets, ItemStack draggedStack,
             IIngredientType<I> type) {
         for (var slot : gui.getMenu().slots) {

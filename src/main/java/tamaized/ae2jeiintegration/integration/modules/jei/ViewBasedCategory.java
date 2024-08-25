@@ -1,28 +1,23 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import appeng.util.Platform;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-
-import appeng.client.gui.Icon;
+import net.minecraft.client.gui.GuiGraphics;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.View;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Widget;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
-import appeng.util.Platform;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ViewBasedCategory<T> implements IRecipeCategory<T> {
     private final WidgetFactory widgetFactory;
@@ -31,10 +26,7 @@ public abstract class ViewBasedCategory<T> implements IRecipeCategory<T> {
 
     protected final IGuiHelper guiHelper;
 
-    protected final IJeiHelpers jeiHelpers;
-
     protected ViewBasedCategory(IJeiHelpers helpers) {
-        this.jeiHelpers = helpers;
         this.guiHelper = helpers.getGuiHelper();
         widgetFactory = new WidgetFactory(helpers);
         cache = CacheBuilder.newBuilder()
@@ -65,32 +57,22 @@ public abstract class ViewBasedCategory<T> implements IRecipeCategory<T> {
     }
 
     @Override
-    public List<Component> getTooltipStrings(T recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+    public void getTooltip(ITooltipBuilder tooltip, T recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
         var cachedView = cache.getUnchecked(recipe);
 
-        var tooltipLines = cachedView.view.getTooltipStrings(mouseX, mouseY);
-        if (!tooltipLines.isEmpty()) {
-            return tooltipLines;
+        if (cachedView.view.getTooltipStrings(tooltip, mouseX, mouseY)) {
+            return;
         }
 
         var widgets = getWidgets(cachedView);
         for (int i = widgets.size() - 1; i >= 0; i--) {
             var widget = widgets.get(i);
             if (widget.hitTest(mouseX, mouseY)) {
-                var lines = widget.getTooltipLines();
-                if (!lines.isEmpty()) {
-                    return lines;
+                if (widget.getTooltipLines(tooltip)) {
+                    return;
                 }
             }
         }
-
-        return List.of();
-    }
-
-    protected final IDrawable getIconDrawable(Icon icon) {
-        return guiHelper.drawableBuilder(Icon.TEXTURE, icon.x, icon.y, icon.width, icon.height)
-                .setTextureSize(Icon.TEXTURE_WIDTH, Icon.TEXTURE_HEIGHT)
-                .build();
     }
 
     private List<Widget> getWidgets(CachedView cachedView) {

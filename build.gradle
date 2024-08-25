@@ -3,7 +3,8 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.152'
+    // https://projects.neoforged.net/neoforged/neogradle
+    id 'net.neoforged.gradle.userdev' version '7.0.161'
 }
 
 version = mod_version
@@ -48,10 +49,12 @@ runs {
     }
 
     client {
+        runType 'client'
         systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
     }
 
     server {
+        runType 'server'
         systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
         programArgument '--nogui'
     }
@@ -69,9 +72,6 @@ dependencies {
 
     implementation "appeng:appliedenergistics2:${ae2_version}"
 
-    compileOnly("me.shedaniel:RoughlyEnoughItems-api-neoforge:${rei_version}")
-    compileOnly("me.shedaniel:REIPluginCompatibilities-forge-annotations:${reipcanno_version}")
-
     compileOnly("curse.maven:ae2wtlib-459929:5193621")
 }
 
@@ -80,6 +80,8 @@ tasks.withType(ProcessResources).configureEach {
             minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
             neo_version         : neo_version, neo_version_range: neo_version_range,
             loader_version_range: loader_version_range,
+            ae2_version_range   : ae2_version_range,
+            jei_version_range   : jei_version_range,
             mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors         : mod_authors, mod_description: mod_description,
     ]
@@ -93,4 +95,17 @@ tasks.withType(ProcessResources).configureEach {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+eclipse {
+    classpath {
+        downloadSources = true
+    }
 }
