@@ -48,7 +48,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -155,21 +157,31 @@ public class JEIPlugin implements IModPlugin {
 
         List<AttunementDisplay> attunementRecipes = new ArrayList<>();
         for (var entry : P2PTunnelAttunementInternal.getApiTunnels()) {
+            Item tunnelType = entry.tunnelType();
+            @SuppressWarnings("deprecation")
+            ResourceKey<Item> attunementKey = tunnelType.builtInRegistryHolder().getKey();
+            ResourceLocation attunementUid = attunementKey == null ? null : attunementKey.location();
             attunementRecipes.add(
                     new AttunementDisplay(
                             Ingredient.of(BuiltInRegistries.ITEM.stream()
                                     .map(ItemStack::new)
                                     .filter(entry.stackPredicate())
                                     .toArray(ItemStack[]::new)),
-                            entry.tunnelType(),
+                            tunnelType,
+                            attunementUid,
                             ItemModText.P2P_API_ATTUNEMENT.text(),
                             entry.description()));
         }
 
         for (var entry : P2PTunnelAttunementInternal.getTagTunnels().entrySet()) {
+            Item tunnelType = entry.getValue();
+            @SuppressWarnings("deprecation")
+            ResourceKey<Item> attunementKey = tunnelType.builtInRegistryHolder().getKey();
+            ResourceLocation attunementUid = attunementKey == null ? null : attunementKey.location();
             attunementRecipes.add(new AttunementDisplay(
                     Ingredient.of(entry.getKey()),
                     entry.getValue(),
+                    attunementUid,
                     ItemModText.P2P_TAG_ATTUNEMENT.text()));
         }
 
