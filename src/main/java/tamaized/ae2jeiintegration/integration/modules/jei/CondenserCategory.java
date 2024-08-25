@@ -24,6 +24,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -45,6 +46,7 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
     private final IDrawable icon;
 
     private final Map<CondenserOutput, IDrawable> buttonIcons;
+    private final Map<CondenserOutput, ResourceLocation> resourceLocations;
 
     public CondenserCategory(IGuiHelper guiHelper) {
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, AEBlocks.CONDENSER.stack());
@@ -67,6 +69,11 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
                 new IconDrawable(Icon.CONDENSER_OUTPUT_MATTER_BALL, 81, 27));
         this.buttonIcons.put(CondenserOutput.SINGULARITY,
                 new IconDrawable(Icon.CONDENSER_OUTPUT_SINGULARITY, 81, 27));
+
+        this.resourceLocations = new EnumMap<>(CondenserOutput.class);
+        this.resourceLocations.put(CondenserOutput.TRASH, ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "trash"));
+        this.resourceLocations.put(CondenserOutput.MATTER_BALLS, ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "matter_balls"));
+        this.resourceLocations.put(CondenserOutput.SINGULARITY, ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "singularity"));
     }
 
     private ItemStack getOutput(CondenserOutput recipe) {
@@ -165,4 +172,8 @@ class CondenserCategory implements IRecipeCategory<CondenserOutput> {
         }
     }
 
+    @Override
+    public @Nullable ResourceLocation getRegistryName(CondenserOutput recipe) {
+        return this.resourceLocations.get(recipe);
+    }
 }
