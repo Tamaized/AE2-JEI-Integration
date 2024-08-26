@@ -2,6 +2,7 @@ package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 
 import appeng.core.AppEng;
 import appeng.core.definitions.AEBlocks;
+import appeng.recipes.AERecipeTypes;
 import appeng.recipes.handlers.InscriberRecipe;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -23,7 +24,7 @@ public class InscriberRecipeCategory implements IRecipeCategory<RecipeHolder<Ins
 
     private static final String TITLE_TRANSLATION_KEY = "block.ae2.inscriber";
 
-    public static final RecipeType<RecipeHolder<InscriberRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(InscriberRecipe.TYPE);
+    public static final RecipeType<RecipeHolder<InscriberRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(AERecipeTypes.INSCRIBER);
 
     private final IDrawable background;
 

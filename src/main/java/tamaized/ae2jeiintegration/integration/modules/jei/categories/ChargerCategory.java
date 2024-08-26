@@ -3,6 +3,7 @@ package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 import appeng.blockentity.misc.ChargerBlockEntity;
 import appeng.blockentity.misc.CrankBlockEntity;
 import appeng.core.definitions.AEBlocks;
+import appeng.recipes.AERecipeTypes;
 import appeng.recipes.handlers.ChargerRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -23,7 +24,7 @@ import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Label;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
 
 public class ChargerCategory implements IRecipeCategory<RecipeHolder<ChargerRecipe>> {
-    public static final RecipeType<RecipeHolder<ChargerRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(ChargerRecipe.TYPE);
+    public static final RecipeType<RecipeHolder<ChargerRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(AERecipeTypes.CHARGER);
 
     private final IDrawableStatic background;
     private final IDrawable icon;

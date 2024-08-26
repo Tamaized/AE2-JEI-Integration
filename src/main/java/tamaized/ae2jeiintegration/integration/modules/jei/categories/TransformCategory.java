@@ -3,6 +3,7 @@ package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 import appeng.core.localization.ItemModText;
+import appeng.recipes.AERecipeTypes;
 import appeng.recipes.transform.TransformRecipe;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -32,7 +33,7 @@ import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
 
 public class TransformCategory implements IRecipeCategory<RecipeHolder<TransformRecipe>> {
 
-    public static final RecipeType<RecipeHolder<TransformRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(TransformRecipe.TYPE);
+    public static final RecipeType<RecipeHolder<TransformRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(AERecipeTypes.TRANSFORM);
 
     private final IDrawable icon;
 

@@ -5,6 +5,7 @@ import appeng.core.AppEng;
 import appeng.core.definitions.AEItems;
 import appeng.core.localization.ItemModText;
 import appeng.items.tools.powered.EntropyManipulatorItem;
+import appeng.recipes.AERecipeTypes;
 import appeng.recipes.entropy.EntropyRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -31,7 +32,7 @@ import tamaized.ae2jeiintegration.integration.modules.jei.widgets.Label;
 import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
 
 public class EntropyManipulatorCategory implements IRecipeCategory<RecipeHolder<EntropyRecipe>> {
-    public static final RecipeType<RecipeHolder<EntropyRecipe>> TYPE = RecipeType.createFromVanilla(EntropyRecipe.TYPE);
+    public static final RecipeType<RecipeHolder<EntropyRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(AERecipeTypes.ENTROPY);
 
     private final WidgetFactory widgetFactory;
     private final IDrawable slotBackground;
@@ -154,7 +155,7 @@ public class EntropyManipulatorCategory implements IRecipeCategory<RecipeHolder<
 
     @Override
     public RecipeType<RecipeHolder<EntropyRecipe>> getRecipeType() {
-        return TYPE;
+        return RECIPE_TYPE;
     }
 
     @Override
