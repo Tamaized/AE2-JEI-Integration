@@ -29,6 +29,7 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
+import mezz.jei.api.recipe.vanilla.IVanillaRecipeFactory;
 import mezz.jei.api.registration.IAdvancedRegistration;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
@@ -236,9 +237,10 @@ public class JEIPlugin implements IModPlugin {
     @Override
     public void registerAdvanced(IAdvancedRegistration registration) {
         if (AEConfig.instance().isEnableFacadeRecipesInRecipeViewer()) {
+            IVanillaRecipeFactory vanillaRecipeFactory = registration.getJeiHelpers().getVanillaRecipeFactory();
             FacadeItem itemFacade = AEItems.FACADE.asItem();
             ItemStack cableAnchor = AEParts.CABLE_ANCHOR.stack();
-            registration.addRecipeManagerPlugin(new FacadeRegistryPlugin(itemFacade, cableAnchor));
+            registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new FacadeRegistryPlugin(vanillaRecipeFactory, itemFacade, cableAnchor));
         }
     }
 
