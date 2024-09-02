@@ -29,7 +29,6 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
-import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.registration.IAdvancedRegistration;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
@@ -281,26 +280,9 @@ public class JEIPlugin implements IModPlugin {
     }
 
     private Optional<IClickableIngredient<?>> makeClickableIngredient(StackWithBounds stackWithBounds) {
-        var ingredient = GenericEntryStackHelper.stackToIngredient(jeiRuntime.getIngredientManager(),
-                stackWithBounds.stack());
-        if (ingredient == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new ClickableIngredient<>(ingredient, stackWithBounds.bounds()));
-    }
-
-    private record ClickableIngredient<T> (ITypedIngredient<T> ingredient,
-            Rect2i area) implements IClickableIngredient<T> {
-        @Override
-        public ITypedIngredient<T> getTypedIngredient() {
-            return ingredient;
-        }
-
-        @Override
-        public Rect2i getArea() {
-            return area;
-        }
+        var ingredient = GenericEntryStackHelper.stackToClickableIngredient(jeiRuntime.getIngredientManager(),
+            stackWithBounds);
+        return Optional.ofNullable(ingredient);
     }
 
     @Override
