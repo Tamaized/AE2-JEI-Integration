@@ -5,8 +5,6 @@ import static appeng.integration.modules.itemlists.TransferHelper.BLUE_SLOT_HIGH
 import static appeng.integration.modules.itemlists.TransferHelper.ORANGE_PLUS_BUTTON_COLOR;
 import static appeng.integration.modules.itemlists.TransferHelper.RED_SLOT_HIGHLIGHT_COLOR;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -77,7 +75,7 @@ public class UseCraftingRecipeTransfer<T extends CraftingTermMenu>
         boolean craftMissing = AbstractContainerScreen.hasControlDown();
         var inputSlots = display.getSlotViews(RecipeIngredientRole.INPUT);
         // Find missing ingredient
-        var slotToIngredientMap = getGuiSlotToIngredientMap(recipe);
+        var slotToIngredientMap = helper.getGuiSlotIndexToIngredientMap(recipeHolder);
         var missingSlots = menu.findMissingIngredients(slotToIngredientMap);
 
         if (missingSlots.missingSlots().size() == slotToIngredientMap.size()) {
@@ -102,64 +100,6 @@ public class UseCraftingRecipeTransfer<T extends CraftingTermMenu>
 
         // No error
         return null;
-    }
-
-    private static Map<Integer, Ingredient> getGuiSlotToIngredientMap(Recipe<?> recipe) {
-        var ingredients = recipe.getIngredients();
-
-        // JEI will align non-shaped recipes smaller than 3x3 in the grid. It'll center them horizontally, and
-        // some will be aligned to the bottom. (i.e. slab recipes).
-        int width, height;
-        if (recipe instanceof ShapedRecipe shapedRecipe) {
-            width = shapedRecipe.getWidth();
-            height = shapedRecipe.getHeight();
-        } else {
-            if (ingredients.size() > 4) {
-                width = height = 3;
-            } else if (ingredients.size() > 1) {
-                width = height = 2;
-            } else {
-                width = height = 1;
-            }
-        }
-
-        var result = new LinkedHashMap<Integer, Ingredient>(ingredients.size());
-        for (int i = 0; i < ingredients.size(); i++) {
-            var guiSlot = getCraftingIndex(i, width, height);
-            var ingredient = ingredients.get(i);
-            if (!ingredient.isEmpty()) {
-                result.put(guiSlot, ingredient);
-            }
-        }
-        return result;
-    }
-
-    private static int getCraftingIndex(int i, int width, int height) {
-        int index;
-        if (width == 1) {
-            if (height == 3) {
-                index = (i * 3) + 1;
-            } else if (height == 2) {
-                index = (i * 3) + 1;
-            } else {
-                index = 4;
-            }
-        } else if (height == 1) {
-            index = i + 3;
-        } else if (width == 2) {
-            index = i;
-            if (i > 1) {
-                index++;
-                if (i > 3) {
-                    index++;
-                }
-            }
-        } else if (height == 2) {
-            index = i + 3;
-        } else {
-            index = i;
-        }
-        return index;
     }
 
     @Override
