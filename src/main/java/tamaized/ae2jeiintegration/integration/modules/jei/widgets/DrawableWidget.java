@@ -1,10 +1,11 @@
 package tamaized.ae2jeiintegration.integration.modules.jei.widgets;
 
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.widgets.IRecipeWidget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 
-public class DrawableWidget extends AE2RecipeWidget {
+public class DrawableWidget implements IRecipeWidget {
     private final IDrawable drawable;
     private final ScreenPosition position;
 

@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package tamaized.ae2jeiintegration.integration.abstraction;
+package tamaized.ae2jeiintegration.integration.modules.jei.converters;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 

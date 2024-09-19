@@ -7,6 +7,7 @@ import appeng.integration.modules.itemlists.TransferHelper;
 import appeng.menu.me.common.GridInventoryEntry;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -21,10 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
-import tamaized.ae2jeiintegration.integration.abstraction.JEIFacade;
 import tamaized.ae2jeiintegration.integration.modules.jei.GenericEntryStackHelper;
-import tamaized.ae2jeiintegration.integration.modules.jei.JEIPlugin;
-import tamaized.ae2jeiintegration.integration.modules.jei.JeiRuntimeAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,15 +43,16 @@ public class EncodePatternTransferHandler<T extends PatternEncodingTermMenu>
     private final MenuType<T> menuType;
     private final Class<T> menuClass;
     private final IRecipeTransferHandlerHelper helper;
-    @Nullable
-    private IIngredientVisibility ingredientVisibility;
+    private final IIngredientVisibility ingredientVisibility;
 
     public EncodePatternTransferHandler(MenuType<T> menuType,
             Class<T> menuClass,
-            IRecipeTransferHandlerHelper helper) {
+            IRecipeTransferHandlerHelper helper,
+            IIngredientVisibility ingredientVisibility) {
         this.menuType = menuType;
         this.menuClass = menuClass;
         this.helper = helper;
+        this.ingredientVisibility = ingredientVisibility;
     }
 
     @Nullable
@@ -97,10 +96,6 @@ public class EncodePatternTransferHandler<T extends PatternEncodingTermMenu>
     }
 
     private boolean isIngredientVisible(ItemStack itemStack) {
-        // Cache the ingredient visibility instance for checks for the best ingredient.
-        if (ingredientVisibility == null) {
-            ingredientVisibility = ((JeiRuntimeAdapter) JEIFacade.instance()).getRuntime().getIngredientVisibility();
-        }
         return ingredientVisibility.isIngredientVisible(VanillaTypes.ITEM_STACK, itemStack);
     }
 
@@ -178,9 +173,11 @@ public class EncodePatternTransferHandler<T extends PatternEncodingTermMenu>
             }
 
             poseStack.popPose();
+        }
 
-            JEIPlugin.drawHoveringText(guiGraphics, TransferHelper.createEncodingTooltip(!craftableSlots.isEmpty(), true),
-                    mouseX, mouseY);
+        @Override
+        public void getTooltip(ITooltipBuilder tooltip) {
+            tooltip.addAll(TransferHelper.createEncodingTooltip(!craftableSlots.isEmpty(), true));
         }
     }
 }

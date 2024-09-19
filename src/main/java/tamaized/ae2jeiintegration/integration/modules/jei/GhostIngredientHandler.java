@@ -27,10 +27,9 @@ import appeng.menu.slot.FakeSlot;
  * JEI allows ingredients to be dragged from a JEI panel onto compatible slots to set filters and the like without
  * having the actual item in hand.
  */
-@SuppressWarnings("rawtypes")
-class GhostIngredientHandler implements IGhostIngredientHandler<AEBaseScreen> {
+class GhostIngredientHandler implements IGhostIngredientHandler<AEBaseScreen<?>> {
     @Override
-    public <I> List<Target<I>> getTargetsTyped(AEBaseScreen gui, ITypedIngredient<I> ingredient, boolean doStart) {
+    public <I> List<Target<I>> getTargetsTyped(AEBaseScreen<?> gui, ITypedIngredient<I> ingredient, boolean doStart) {
         var wrapped = wrapDraggedItem(ingredient.getType(), ingredient.getIngredient());
         if (wrapped == null) {
             return Collections.emptyList();

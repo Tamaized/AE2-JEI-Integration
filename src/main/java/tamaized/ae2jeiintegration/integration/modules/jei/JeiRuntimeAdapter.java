@@ -2,12 +2,9 @@ package tamaized.ae2jeiintegration.integration.modules.jei;
 
 import appeng.integration.abstraction.ItemListModAdapter;
 import com.google.common.base.Strings;
-
 import mezz.jei.api.runtime.IJeiRuntime;
 
-import tamaized.ae2jeiintegration.integration.abstraction.IJEI;
-
-public class JeiRuntimeAdapter implements IJEI, ItemListModAdapter {
+public class JeiRuntimeAdapter implements ItemListModAdapter {
 
     private final IJeiRuntime runtime;
 
@@ -23,10 +20,6 @@ public class JeiRuntimeAdapter implements IJEI, ItemListModAdapter {
     @Override
     public String getShortName() {
         return "JEI";
-    }
-
-    public IJeiRuntime getRuntime() {
-        return runtime;
     }
 
     @Override

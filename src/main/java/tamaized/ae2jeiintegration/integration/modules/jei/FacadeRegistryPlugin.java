@@ -51,7 +51,7 @@ class FacadeRegistryPlugin implements ISimpleRecipeManagerPlugin<RecipeHolder<Cr
         var focusStack = input.getItemStack().orElse(ItemStack.EMPTY);
 
         // Looking up if a certain block can be used to make a facade
-        ItemStack facade = this.itemFacade.createFacadeForItem(focusStack, false);
+        var facade = this.itemFacade.createFacadeForItem(focusStack, false);
         if (!facade.isEmpty()) {
             return List.of(make(focusStack, this.cableAnchor, facade));
         }
@@ -64,7 +64,7 @@ class FacadeRegistryPlugin implements ISimpleRecipeManagerPlugin<RecipeHolder<Cr
 
         // Looking up how a certain facade is crafted
         if (focusStack.getItem() instanceof FacadeItem facadeItem) {
-            ItemStack textureItem = facadeItem.getTextureItem(focusStack);
+            var textureItem = facadeItem.getTextureItem(focusStack);
             return List.of(make(textureItem, this.cableAnchor, focusStack));
         }
         return List.of();
@@ -79,7 +79,7 @@ class FacadeRegistryPlugin implements ISimpleRecipeManagerPlugin<RecipeHolder<Cr
     private RecipeHolder<CraftingRecipe> make(ItemStack textureItem, ItemStack cableAnchor, ItemStack result) {
         // This id should only be used within JEI and not really matter
         var itemId = BuiltInRegistries.ITEM.getKey(textureItem.getItem());
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID,
+        var id = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID,
                 "facade/" + itemId.getNamespace() + "/" + itemId.getPath());
 
         var output = result.copyWithCount(4);

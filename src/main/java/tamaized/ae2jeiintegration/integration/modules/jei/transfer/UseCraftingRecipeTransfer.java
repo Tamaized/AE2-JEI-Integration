@@ -1,31 +1,31 @@
 package tamaized.ae2jeiintegration.integration.modules.jei.transfer;
 
-import static appeng.integration.modules.itemlists.TransferHelper.BLUE_PLUS_BUTTON_COLOR;
-import static appeng.integration.modules.itemlists.TransferHelper.BLUE_SLOT_HIGHLIGHT_COLOR;
-import static appeng.integration.modules.itemlists.TransferHelper.ORANGE_PLUS_BUTTON_COLOR;
-import static appeng.integration.modules.itemlists.TransferHelper.RED_SLOT_HIGHLIGHT_COLOR;
-
-import java.util.Objects;
-import java.util.Optional;
-
-import tamaized.ae2jeiintegration.integration.modules.jei.JEIPlugin;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.crafting.*;
-
+import appeng.core.localization.ItemModText;
+import appeng.integration.modules.itemlists.CraftingHelper;
+import appeng.integration.modules.itemlists.TransferHelper;
+import appeng.menu.me.items.CraftingTermMenu;
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 
-import appeng.core.localization.ItemModText;
-import appeng.integration.modules.itemlists.CraftingHelper;
-import appeng.integration.modules.itemlists.TransferHelper;
-import appeng.menu.me.items.CraftingTermMenu;
+import java.util.Objects;
+import java.util.Optional;
+
+import static appeng.integration.modules.itemlists.TransferHelper.BLUE_PLUS_BUTTON_COLOR;
+import static appeng.integration.modules.itemlists.TransferHelper.BLUE_SLOT_HIGHLIGHT_COLOR;
+import static appeng.integration.modules.itemlists.TransferHelper.ORANGE_PLUS_BUTTON_COLOR;
+import static appeng.integration.modules.itemlists.TransferHelper.RED_SLOT_HIGHLIGHT_COLOR;
 
 /**
  * Recipe transfer implementation with the intended purpose of actually crafting an item. Most of the work is done
@@ -136,7 +136,7 @@ public class UseCraftingRecipeTransfer<T extends CraftingTermMenu>
             poseStack.pushPose();
             poseStack.translate(recipeX, recipeY, 0);
 
-            // 1) draw slot highlights
+            // draw slot highlights
             var slotViews = slots.getSlotViews(RecipeIngredientRole.INPUT);
             for (int i = 0; i < slotViews.size(); i++) {
                 var slotView = slotViews.get(i);
@@ -150,10 +150,16 @@ public class UseCraftingRecipeTransfer<T extends CraftingTermMenu>
             }
 
             poseStack.popPose();
+        }
 
-            // 2) draw tooltip
-            var tooltip = TransferHelper.createCraftingTooltip(indices, craftMissing, true);
-            JEIPlugin.drawHoveringText(guiGraphics, tooltip, mouseX, mouseY);
+        @Override
+        public int getMissingCountHint() {
+            return indices.missingSlots().size();
+        }
+
+        @Override
+        public void getTooltip(ITooltipBuilder tooltip) {
+            tooltip.addAll(TransferHelper.createCraftingTooltip(indices, craftMissing, true));
         }
     }
 }

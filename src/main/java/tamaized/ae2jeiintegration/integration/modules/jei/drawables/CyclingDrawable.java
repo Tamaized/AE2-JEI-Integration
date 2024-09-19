@@ -24,8 +24,7 @@ public class CyclingDrawable implements IDrawable {
 
     public static CyclingDrawable forItems(IGuiHelper guiHelper, ItemLike... items) {
         return new CyclingDrawable(Arrays.stream(items)
-                .map(i -> i.asItem().getDefaultInstance())
-                .map(guiHelper::createDrawableItemStack)
+                .map(guiHelper::createDrawableItemLike)
                 .toList());
     }
 

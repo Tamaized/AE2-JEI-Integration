@@ -7,76 +7,55 @@ import appeng.client.gui.Icon;
 import appeng.core.AppEng;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
+import appeng.core.definitions.ItemDefinition;
 import appeng.core.localization.ButtonToolTips;
-import mezz.jei.api.constants.VanillaTypes;
+import appeng.items.materials.StorageComponentItem;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
-import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
-import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import tamaized.ae2jeiintegration.integration.modules.jei.drawables.IconDrawable;
-import tamaized.ae2jeiintegration.integration.modules.jei.widgets.DrawableWidget;
-import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public class CondenserCategory implements IRecipeCategory<CondenserOutput> {
+public class CondenserCategory extends AbstractCategory<CondenserOutput> {
 
     private static final String TITLE_TRANSLATION_KEY = "block.ae2.condenser";
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "textures/guis/condenser.png");
 
     public static final RecipeType<CondenserOutput> RECIPE_TYPE = RecipeType.create(AppEng.MOD_ID, "condenser",
             CondenserOutput.class);
 
-    private final IDrawable background;
     private final IDrawableAnimated progress;
 
-    private final IDrawable iconButton;
-    private final IDrawable iconTrash;
-    private final IDrawable icon;
-
-    private final Map<CondenserOutput, IDrawable> buttonIcons;
+    private final Map<CondenserOutput, Icon> buttonIcons;
     private final Map<CondenserOutput, ResourceLocation> resourceLocations;
-    private final WidgetFactory widgetFactory;
 
-    public CondenserCategory(IJeiHelpers jeiHelpers) {
-        IGuiHelper guiHelper = jeiHelpers.getGuiHelper();
-        this.widgetFactory = new WidgetFactory(jeiHelpers);
-        this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, AEBlocks.CONDENSER.stack());
-
-        ResourceLocation location = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "textures/guis/condenser.png");
-        this.background = guiHelper.createDrawable(location, 48, 25, 96, 48);
-
-        // This is shown on the "input slot" for condenser operations to indicate that any item can be used
-        this.iconTrash = new IconDrawable(Icon.BACKGROUND_TRASH, 3, 27);
-        this.iconButton = new IconDrawable(Icon.TOOLBAR_BUTTON_BACKGROUND, 80, 26);
-
-        IDrawableStatic progressDrawable = guiHelper.drawableBuilder(location, 176, 0, 6, 18).addPadding(0, 0, 72, 0)
-                .build();
-        this.progress = guiHelper.createAnimatedDrawable(progressDrawable, 40, IDrawableAnimated.StartDirection.BOTTOM,
-                false);
+    public CondenserCategory(IGuiHelper guiHelper) {
+        super(
+            guiHelper,
+            AEBlocks.CONDENSER,
+            Component.translatable(TITLE_TRANSLATION_KEY),
+            guiHelper.createDrawable(TEXTURE, 48, 25, 96, 48)
+        );
+        this.progress = guiHelper.drawableBuilder(TEXTURE, 176, 0, 6, 18)
+                .addPadding(0, 0, 72, 0)
+                .buildAnimated(40, IDrawableAnimated.StartDirection.BOTTOM, false);
 
         this.buttonIcons = new EnumMap<>(CondenserOutput.class);
-
-        this.buttonIcons.put(CondenserOutput.MATTER_BALLS,
-                new IconDrawable(Icon.CONDENSER_OUTPUT_MATTER_BALL, 81, 27));
-        this.buttonIcons.put(CondenserOutput.SINGULARITY,
-                new IconDrawable(Icon.CONDENSER_OUTPUT_SINGULARITY, 81, 27));
+        this.buttonIcons.put(CondenserOutput.MATTER_BALLS, Icon.CONDENSER_OUTPUT_MATTER_BALL);
+        this.buttonIcons.put(CondenserOutput.SINGULARITY, Icon.CONDENSER_OUTPUT_SINGULARITY);
 
         this.resourceLocations = new EnumMap<>(CondenserOutput.class);
         this.resourceLocations.put(CondenserOutput.TRASH, ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "trash"));
@@ -84,7 +63,7 @@ public class CondenserCategory implements IRecipeCategory<CondenserOutput> {
         this.resourceLocations.put(CondenserOutput.SINGULARITY, ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "singularity"));
     }
 
-    private ItemStack getOutput(CondenserOutput recipe) {
+    private static ItemStack getOutput(CondenserOutput recipe) {
         return switch (recipe) {
             case MATTER_BALLS -> AEItems.MATTER_BALL.stack();
             case SINGULARITY -> AEItems.SINGULARITY.stack();
@@ -98,62 +77,45 @@ public class CondenserCategory implements IRecipeCategory<CondenserOutput> {
     }
 
     @Override
-    public Component getTitle() {
-        return Component.translatable(TITLE_TRANSLATION_KEY);
-    }
-
-    @Override
-    public IDrawable getBackground() {
-        return this.background;
-    }
-
-    @Override
-    public IDrawable getIcon() {
-        return icon;
-    }
-
-    @Override
     public void draw(CondenserOutput recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX,
             double mouseY) {
         this.progress.draw(guiGraphics);
-        this.iconTrash.draw(guiGraphics);
-        this.iconButton.draw(guiGraphics);
-    }
 
-    @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, CondenserOutput recipe, IFocusGroup focuses) {
+        // This is shown on the "input slot" for condenser operations to indicate that any item can be used
+        Icon.BACKGROUND_TRASH.getBlitter().dest(3, 27).blit(guiGraphics);
+
+        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(80, 26).blit(guiGraphics);
+
         var buttonIcon = this.buttonIcons.get(recipe);
         if (buttonIcon != null) {
-            DrawableWidget widget = widgetFactory.drawable(0, 0, buttonIcon);
-            builder.addWidget(widget);
+            buttonIcon.getBlitter().dest(81, 27).blit(guiGraphics);
         }
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, CondenserOutput recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.OUTPUT, 57, 27)
-                .setSlotName("output")
                 .addItemStack(getOutput(recipe));
 
         // Get all storage cells and cycle them through a catalyst slot
         builder.addSlot(RecipeIngredientRole.CATALYST, 53, 1)
-                .setSlotName("storage_cell")
                 .addItemStacks(getViableStorageComponents(recipe));
     }
 
-    private List<ItemStack> getViableStorageComponents(CondenserOutput condenserOutput) {
+    private static List<ItemStack> getViableStorageComponents(CondenserOutput condenserOutput) {
         List<ItemStack> viableComponents = new ArrayList<>();
-        this.addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_1K.stack());
-        this.addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_4K.stack());
-        this.addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_16K.stack());
-        this.addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_64K.stack());
-        this.addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_256K.stack());
+        addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_1K);
+        addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_4K);
+        addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_16K);
+        addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_64K);
+        addViableComponent(condenserOutput, viableComponents, AEItems.CELL_COMPONENT_256K);
         return viableComponents;
     }
 
-    private void addViableComponent(CondenserOutput condenserOutput, List<ItemStack> viableComponents,
-            ItemStack itemStack) {
-        IStorageComponent comp = (IStorageComponent) itemStack.getItem();
+    private static void addViableComponent(CondenserOutput condenserOutput, List<ItemStack> viableComponents,
+                                           ItemDefinition<StorageComponentItem> storageComponent) {
+        IStorageComponent comp = storageComponent.get();
+        ItemStack itemStack = storageComponent.stack();
         int storage = comp.getBytes(itemStack) * CondenserBlockEntity.BYTE_MULTIPLIER;
         if (storage >= condenserOutput.requiredPower) {
             viableComponents.add(itemStack);

@@ -1,35 +1,27 @@
 package tamaized.ae2jeiintegration.integration.modules.jei;
 
 import appeng.api.config.CondenserOutput;
-import appeng.api.features.P2PTunnelAttunementInternal;
 import appeng.client.gui.AEBaseScreen;
-import appeng.client.gui.StackWithBounds;
-import appeng.client.gui.implementations.InscriberScreen;
 import appeng.core.AEConfig;
 import appeng.core.AppEng;
 import appeng.core.FacadeCreativeTab;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 import appeng.core.definitions.AEParts;
-import appeng.core.definitions.ItemDefinition;
 import appeng.core.localization.GuiText;
 import appeng.core.localization.ItemModText;
 import appeng.integration.abstraction.ItemListMod;
-import appeng.items.parts.FacadeItem;
+import appeng.integration.abstraction.ItemListModAdapter;
 import appeng.menu.me.items.CraftingTermMenu;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.menu.me.items.WirelessCraftingTermMenu;
 import appeng.recipes.AERecipeTypes;
-import com.google.common.collect.ImmutableList;
 import de.mari_023.ae2wtlib.wct.WCTMenu;
 import de.mari_023.ae2wtlib.wet.WETMenu;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.gui.handlers.IGuiClickableArea;
-import mezz.jei.api.gui.handlers.IGuiContainerHandler;
-import mezz.jei.api.recipe.vanilla.IVanillaRecipeFactory;
 import mezz.jei.api.registration.IAdvancedRegistration;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
@@ -37,23 +29,12 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
-import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.neoforged.fml.ModList;
 import tamaized.ae2jeiintegration.api.integrations.jei.IngredientConverters;
-import tamaized.ae2jeiintegration.integration.abstraction.JEIFacade;
 import tamaized.ae2jeiintegration.integration.modules.jei.categories.AttunementCategory;
 import tamaized.ae2jeiintegration.integration.modules.jei.categories.CertusGrowthCategory;
 import tamaized.ae2jeiintegration.integration.modules.jei.categories.ChargerCategory;
@@ -61,24 +42,21 @@ import tamaized.ae2jeiintegration.integration.modules.jei.categories.CondenserCa
 import tamaized.ae2jeiintegration.integration.modules.jei.categories.EntropyManipulatorCategory;
 import tamaized.ae2jeiintegration.integration.modules.jei.categories.InscriberRecipeCategory;
 import tamaized.ae2jeiintegration.integration.modules.jei.categories.TransformCategory;
-import tamaized.ae2jeiintegration.integration.modules.jei.recipes.AttunementDisplay;
+import tamaized.ae2jeiintegration.integration.modules.jei.converters.FluidIngredientConverter;
+import tamaized.ae2jeiintegration.integration.modules.jei.converters.ItemIngredientConverter;
+import tamaized.ae2jeiintegration.integration.modules.jei.recipes.AttunementRecipe;
 import tamaized.ae2jeiintegration.integration.modules.jei.subtypes.FacadeSubtypeInterpreter;
 import tamaized.ae2jeiintegration.integration.modules.jei.transfer.EncodePatternTransferHandler;
 import tamaized.ae2jeiintegration.integration.modules.jei.transfer.UseCraftingRecipeTransfer;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @JeiPlugin
 public class JEIPlugin implements IModPlugin {
     public static final ResourceLocation TEXTURE = AppEng.makeId("textures/guis/jei.png");
 
     private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "core");
-
-    private IJeiRuntime jeiRuntime;
 
     public JEIPlugin() {
         IngredientConverters.register(new ItemIngredientConverter());
@@ -98,234 +76,146 @@ public class JEIPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registry) {
         var jeiHelpers = registry.getJeiHelpers();
+        var guiHelper = jeiHelpers.getGuiHelper();
         registry.addRecipeCategories(
-                new TransformCategory(jeiHelpers),
-                new CondenserCategory(jeiHelpers),
-                new InscriberRecipeCategory(jeiHelpers.getGuiHelper()),
-                new ChargerCategory(jeiHelpers),
-                new AttunementCategory(jeiHelpers),
-                new CertusGrowthCategory(jeiHelpers),
-                new EntropyManipulatorCategory(jeiHelpers));
+                new TransformCategory(guiHelper),
+                new CondenserCategory(guiHelper),
+                new InscriberRecipeCategory(guiHelper),
+                new ChargerCategory(guiHelper),
+                new AttunementCategory(guiHelper),
+                new CertusGrowthCategory(guiHelper),
+                new EntropyManipulatorCategory(guiHelper));
     }
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
+        var jeiHelpers = registration.getJeiHelpers();
+        var ingredientVisibility = jeiHelpers.getIngredientVisibility();
+        var transferHelper = registration.getTransferHelper();
+
         // Allow vanilla crafting recipe transfer from JEI to crafting terminal
         registration.addRecipeTransferHandler(
-                new UseCraftingRecipeTransfer<>(CraftingTermMenu.class, CraftingTermMenu.TYPE,
-                        registration.getTransferHelper()),
+                new UseCraftingRecipeTransfer<>(CraftingTermMenu.class, CraftingTermMenu.TYPE, transferHelper),
                 RecipeTypes.CRAFTING);
         registration.addRecipeTransferHandler(
                 new UseCraftingRecipeTransfer<>(WirelessCraftingTermMenu.class, WirelessCraftingTermMenu.TYPE,
-                        registration.getTransferHelper()),
+                    transferHelper),
                 RecipeTypes.CRAFTING);
 
         // Universal handler for processing to try and handle all IRecipe
         registration.addUniversalRecipeTransferHandler(new EncodePatternTransferHandler<>(
                 PatternEncodingTermMenu.TYPE,
                 PatternEncodingTermMenu.class,
-                registration.getTransferHelper()));
+                transferHelper,
+                ingredientVisibility
+        ));
 
-        if(ModList.get().isLoaded("ae2wtlib")) {
+        if (ModList.get().isLoaded("ae2wtlib")) {
             registration.addRecipeTransferHandler(
-                    new UseCraftingRecipeTransfer<>(WCTMenu.class, WCTMenu.TYPE, registration.getTransferHelper()),
+                    new UseCraftingRecipeTransfer<>(WCTMenu.class, WCTMenu.TYPE, transferHelper),
                     RecipeTypes.CRAFTING);
             registration.addUniversalRecipeTransferHandler(
-                    new EncodePatternTransferHandler<>(WETMenu.TYPE, WETMenu.class, registration.getTransferHelper()));
+                    new EncodePatternTransferHandler<>(WETMenu.TYPE, WETMenu.class, transferHelper,
+                        ingredientVisibility));
         }
     }
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        ClientLevel level = Minecraft.getInstance().level;
+        var level = Minecraft.getInstance().level;
         assert level != null;
-        RecipeManager recipeManager = level.getRecipeManager();
+        var recipeManager = level.getRecipeManager();
 
         registration.addRecipes(InscriberRecipeCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(AERecipeTypes.INSCRIBER));
         registration.addRecipes(ChargerCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(AERecipeTypes.CHARGER));
-        registration.addRecipes(CondenserCategory.RECIPE_TYPE,
-                ImmutableList.of(CondenserOutput.MATTER_BALLS, CondenserOutput.SINGULARITY));
+        registration.addRecipes(CondenserCategory.RECIPE_TYPE, List.of(CondenserOutput.MATTER_BALLS, CondenserOutput.SINGULARITY));
         registration.addRecipes(EntropyManipulatorCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(AERecipeTypes.ENTROPY));
         registration.addRecipes(TransformCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(AERecipeTypes.TRANSFORM));
-
-        registerP2PAttunement(registration);
-        registerDescriptions(registration);
-
-        registration.addItemStackInfo(
-                AEBlocks.CRANK.stack(),
-                ItemModText.CRANK_DESCRIPTION.text());
-
+        registration.addRecipes(AttunementCategory.RECIPE_TYPE, AttunementRecipe.createAllRecipes());
         registration.addRecipes(CertusGrowthCategory.TYPE, List.of(CertusGrowthCategory.Page.values()));
-    }
 
-    private void registerP2PAttunement(IRecipeRegistration registration) {
-
-        List<AttunementDisplay> attunementRecipes = new ArrayList<>();
-        for (var entry : P2PTunnelAttunementInternal.getApiTunnels()) {
-            Item tunnelType = entry.tunnelType();
-            @SuppressWarnings("deprecation")
-            ResourceKey<Item> attunementKey = tunnelType.builtInRegistryHolder().getKey();
-            ResourceLocation attunementUid = attunementKey == null ? null : attunementKey.location();
-            attunementRecipes.add(
-                    new AttunementDisplay(
-                            Ingredient.of(BuiltInRegistries.ITEM.stream()
-                                    .map(ItemStack::new)
-                                    .filter(entry.stackPredicate())
-                                    .toArray(ItemStack[]::new)),
-                            tunnelType,
-                            attunementUid,
-                            ItemModText.P2P_API_ATTUNEMENT.text(),
-                            entry.description()));
-        }
-
-        for (var entry : P2PTunnelAttunementInternal.getTagTunnels().entrySet()) {
-            Item tunnelType = entry.getValue();
-            @SuppressWarnings("deprecation")
-            ResourceKey<Item> attunementKey = tunnelType.builtInRegistryHolder().getKey();
-            ResourceLocation attunementUid = attunementKey == null ? null : attunementKey.location();
-            attunementRecipes.add(new AttunementDisplay(
-                    Ingredient.of(entry.getKey()),
-                    entry.getValue(),
-                    attunementUid,
-                    ItemModText.P2P_TAG_ATTUNEMENT.text()));
-        }
-
-        // Remove attunements with empty ingredients
-        attunementRecipes.removeIf(a -> a.inputs().isEmpty());
-
-        registration.addRecipes(AttunementCategory.TYPE, attunementRecipes);
-
+        var presses = List.of(
+            AEItems.LOGIC_PROCESSOR_PRESS.stack(),
+            AEItems.CALCULATION_PROCESSOR_PRESS.stack(),
+            AEItems.ENGINEERING_PROCESSOR_PRESS.stack(),
+            AEItems.SILICON_PRESS.stack()
+        );
+        registration.addItemStackInfo(presses, GuiText.inWorldCraftingPresses.text());
+        registration.addIngredientInfo(AEBlocks.CRANK, ItemModText.CRANK_DESCRIPTION.text());
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        var condenser = AEBlocks.CONDENSER.stack();
-        registration.addRecipeCatalyst(condenser, CondenserCategory.RECIPE_TYPE);
-
-        var inscriber = AEBlocks.INSCRIBER.stack();
-        registration.addRecipeCatalyst(inscriber, InscriberRecipeCategory.RECIPE_TYPE);
-
-        var craftingTerminal = AEParts.CRAFTING_TERMINAL.stack();
-        registration.addRecipeCatalyst(craftingTerminal, RecipeTypes.CRAFTING);
-
-        var wirelessCraftingTerminal = AEItems.WIRELESS_CRAFTING_TERMINAL.stack();
-        registration.addRecipeCatalyst(wirelessCraftingTerminal, RecipeTypes.CRAFTING);
+        registration.addRecipeCatalyst(AEBlocks.CONDENSER, CondenserCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(AEBlocks.INSCRIBER, InscriberRecipeCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(AEParts.CRAFTING_TERMINAL, RecipeTypes.CRAFTING);
+        registration.addRecipeCatalyst(AEItems.WIRELESS_CRAFTING_TERMINAL, RecipeTypes.CRAFTING);
 
         // Both the charger and crank will be used as catalysts here to make it more discoverable
-        registration.addRecipeCatalyst(AEBlocks.CHARGER.stack(), ChargerCategory.RECIPE_TYPE);
-        registration.addRecipeCatalyst(AEBlocks.CRANK.stack(), ChargerCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(AEBlocks.CHARGER, ChargerCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(AEBlocks.CRANK, ChargerCategory.RECIPE_TYPE);
 
-        registration.addRecipeCatalyst(AEItems.ENTROPY_MANIPULATOR.stack(), EntropyManipulatorCategory.RECIPE_TYPE);
-    }
-
-    private void registerDescriptions(IRecipeRegistration registry) {
-        this.addDescription(registry, AEItems.LOGIC_PROCESSOR_PRESS,
-                GuiText.inWorldCraftingPresses.text());
-        this.addDescription(registry, AEItems.CALCULATION_PROCESSOR_PRESS,
-                GuiText.inWorldCraftingPresses.text());
-        this.addDescription(registry, AEItems.ENGINEERING_PROCESSOR_PRESS,
-                GuiText.inWorldCraftingPresses.text());
-        this.addDescription(registry, AEItems.SILICON_PRESS,
-                GuiText.inWorldCraftingPresses.text());
-    }
-
-    private void addDescription(IRecipeRegistration registry, ItemDefinition<?> itemDefinition,
-            Component... message) {
-        registry.addIngredientInfo(itemDefinition.stack(), VanillaTypes.ITEM_STACK, message);
+        registration.addRecipeCatalyst(AEItems.ENTROPY_MANIPULATOR, EntropyManipulatorCategory.RECIPE_TYPE);
     }
 
     @Override
     public void registerAdvanced(IAdvancedRegistration registration) {
         if (AEConfig.instance().isEnableFacadeRecipesInRecipeViewer()) {
-            IVanillaRecipeFactory vanillaRecipeFactory = registration.getJeiHelpers().getVanillaRecipeFactory();
-            FacadeItem itemFacade = AEItems.FACADE.asItem();
-            ItemStack cableAnchor = AEParts.CABLE_ANCHOR.stack();
-            registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new FacadeRegistryPlugin(vanillaRecipeFactory, itemFacade, cableAnchor));
+            var vanillaRecipeFactory = registration.getJeiHelpers().getVanillaRecipeFactory();
+            var itemFacade = AEItems.FACADE.asItem();
+            var cableAnchor = AEParts.CABLE_ANCHOR.stack();
+            var facadeRegistryPlugin = new FacadeRegistryPlugin(vanillaRecipeFactory, itemFacade, cableAnchor);
+            registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, facadeRegistryPlugin);
         }
     }
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addGenericGuiContainerHandler(AEBaseScreen.class,
-                new IGuiContainerHandler<AEBaseScreen<?>>() {
-                    @Override
-                    public List<Rect2i> getGuiExtraAreas(AEBaseScreen<?> screen) {
-                        return screen.getExclusionZones();
-                    }
+        var ingredientManager = registration.getJeiHelpers().getIngredientManager();
+        registration.addGenericGuiContainerHandler(AEBaseScreen.class, new AEGuiContainerHandler(ingredientManager));
 
-                    @Override
-                    public Optional<IClickableIngredient<?>> getClickableIngredientUnderMouse(AEBaseScreen<?> screen,
-                            double mouseX, double mouseY) {
-                        // The following code allows the player to show recipes involving fluids in AE fluid terminals
-                        // or AE fluid tanks shown in fluid interfaces and other UI.
-                        var stackWithBounds = screen.getStackUnderMouse(mouseX, mouseY);
-                        if (stackWithBounds != null) {
-                            return makeClickableIngredient(stackWithBounds);
-                        }
-
-                        return Optional.empty();
-                    }
-
-                    @Override
-                    public Collection<IGuiClickableArea> getGuiClickableAreas(AEBaseScreen<?> screen, double mouseX,
-                            double mouseY) {
-                        if (screen instanceof InscriberScreen) {
-                            return Collections.singletonList(
-                                    IGuiClickableArea.createBasic(82, 39, 26, 16, InscriberRecipeCategory.RECIPE_TYPE));
-                        }
-
-                        return Collections.emptyList();
-                    }
-                });
-
-        registration.addGhostIngredientHandler(AEBaseScreen.class, new GhostIngredientHandler());
-    }
-
-    private Optional<IClickableIngredient<?>> makeClickableIngredient(StackWithBounds stackWithBounds) {
-        var ingredient = GenericEntryStackHelper.stackToClickableIngredient(jeiRuntime.getIngredientManager(),
-            stackWithBounds);
-        return Optional.ofNullable(ingredient);
+        @SuppressWarnings("unchecked")
+        var aeBaseScreenClass = (Class<AEBaseScreen<?>>) (Object) AEBaseScreen.class;
+        registration.addGhostIngredientHandler(aeBaseScreenClass, new GhostIngredientHandler());
     }
 
     @Override
     public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
-        this.jeiRuntime = jeiRuntime;
         var adapter = new JeiRuntimeAdapter(jeiRuntime);
-        JEIFacade.setInstance(adapter);
         ItemListMod.setAdapter(adapter);
-        this.hideDebugTools(jeiRuntime);
 
-        if (!AEConfig.instance().isEnableFacadesInRecipeViewer()) {
-            jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK,
+        var ingredientManager = jeiRuntime.getIngredientManager();
+        var config = AEConfig.instance();
+
+        if (!config.isDebugToolsEnabled()) {
+            ingredientManager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, getDebugTools());
+        }
+
+        if (!config.isEnableFacadesInRecipeViewer()) {
+            ingredientManager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK,
                     FacadeCreativeTab.getDisplayItems());
         }
     }
 
-    private void hideDebugTools(IJeiRuntime jeiRuntime) {
-        if (!AEConfig.instance().isDebugToolsEnabled()) {
-            Collection<ItemStack> toRemove = new ArrayList<>();
-
-            // We use the internal API here as exception as debug tools are not part of the public one by design.
-            toRemove.add(AEBlocks.DEBUG_CUBE_GEN.stack());
-            //toRemove.add(AEBlocks.DEBUG_CHUNK_LOADER.stack());
-            toRemove.add(AEBlocks.DEBUG_ENERGY_GEN.stack());
-            toRemove.add(AEBlocks.DEBUG_ITEM_GEN.stack());
-            toRemove.add(AEBlocks.DEBUG_PHANTOM_NODE.stack());
-
-            toRemove.add(AEItems.DEBUG_CARD.stack());
-            toRemove.add(AEItems.DEBUG_ERASER.stack());
-            toRemove.add(AEItems.DEBUG_METEORITE_PLACER.stack());
-            toRemove.add(AEItems.DEBUG_REPLICATOR_CARD.stack());
-
-            jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK,
-                    toRemove);
-        }
-
+    @Override
+    public void onRuntimeUnavailable() {
+        ItemListMod.setAdapter(ItemListModAdapter.none());
     }
 
-    // Copy-pasted from JEI since it doesn't seem to expose these
-    public static void drawHoveringText(GuiGraphics guiGraphics, List<Component> textLines, int x, int y) {
-        var font = Minecraft.getInstance().font;
-        guiGraphics.renderTooltip(font, textLines, Optional.empty(), x, y);
+    private static Collection<ItemStack> getDebugTools() {
+        // We use the internal API here as exception, because debug tools are not part of the public API by design.
+
+        return List.of(
+            AEBlocks.DEBUG_CUBE_GEN.stack(),
+            AEBlocks.DEBUG_ENERGY_GEN.stack(),
+            AEBlocks.DEBUG_ITEM_GEN.stack(),
+            AEBlocks.DEBUG_PHANTOM_NODE.stack(),
+
+            AEItems.DEBUG_CARD.stack(),
+            AEItems.DEBUG_ERASER.stack(),
+            AEItems.DEBUG_METEORITE_PLACER.stack(),
+            AEItems.DEBUG_REPLICATOR_CARD.stack()
+        );
     }
+
 }
