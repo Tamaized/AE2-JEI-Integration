@@ -216,11 +216,11 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
     private class BuddingQuartzMovingView implements View {
         @Override
         public void buildSlots(IRecipeLayoutBuilder builder) {
-            var slot1 = builder.addSlot(RecipeIngredientRole.INPUT, centerX - 40, 22)
+            var slot1 = builder.addSlot(RecipeIngredientRole.INPUT, centerX - 40, 0)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_VARIANTS);
 
-            var slot2 = builder.addSlot(RecipeIngredientRole.OUTPUT, centerX + 40 - 18, 22)
+            var slot2 = builder.addSlot(RecipeIngredientRole.OUTPUT, centerX + 40 - 18, 0)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_DECAY_ORDER);
 
@@ -229,19 +229,14 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
 
         @Override
         public void createRecipeExtras(IRecipeExtrasBuilder builder, IFocusGroup focuses) {
-            Component text2 = ItemModText.BUDDING_QUARTZ_DECAYS_WHEN_BROKEN.text();
-            builder.addWidget(new LabelWidget(centerX, 0, text2)
-                    .bodyText()
-                    .maxWidth(background.getWidth()));
+            builder.addWidget(WidgetFactory.unfilledArrow(guiHelper, centerX - 12, 0));
 
-            builder.addWidget(WidgetFactory.unfilledArrow(guiHelper, centerX - 12, 22));
-
-            Component text1 = ItemModText.SILK_TOUCH_PREVENTS_DECAY_FOR_IMPERFECT.text();
-            builder.addWidget(new LabelWidget(centerX, 42, text1)
-                    .bodyText());
-            Component text = ItemModText.SPATIAL_IO_NEVER_CAUSES_ANY_DECAY.text();
-            builder.addWidget(new LabelWidget(centerX, 53, text)
-                    .bodyText());
+            builder.addScrollBoxWidget(getWidth(), getHeight() - 20, 0, 20)
+                .setContents(List.of(
+                    ItemModText.BUDDING_QUARTZ_DECAYS_WHEN_BROKEN.text().withColor(0x7E7E7E),
+                    ItemModText.SILK_TOUCH_PREVENTS_DECAY_FOR_IMPERFECT.text().withColor(0x7E7E7E),
+                    ItemModText.SPATIAL_IO_NEVER_CAUSES_ANY_DECAY.text().withColor(0x7E7E7E)
+                ));
         }
     }
 
