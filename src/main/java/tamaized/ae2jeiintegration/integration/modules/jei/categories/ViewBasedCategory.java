@@ -2,15 +2,17 @@ package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
-import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import net.minecraft.network.chat.Component;
 
-public abstract class ViewBasedCategory<T> extends AbstractCategory<T> {
+public abstract class ViewBasedCategory<T> extends AbstractRecipeCategory<T> {
 
-    protected ViewBasedCategory(IGuiHelper guiHelper, IDrawable icon, Component title, IDrawable background) {
-        super(guiHelper, icon, title, background);
+    protected ViewBasedCategory(RecipeType<T> recipeType, Component title, IDrawable icon, int width, int height) {
+        super(recipeType, title, icon, width, height);
     }
 
     protected abstract View getView(T recipe);
@@ -22,7 +24,7 @@ public abstract class ViewBasedCategory<T> extends AbstractCategory<T> {
     }
 
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses) {
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
         var view = getView(recipe);
         view.createRecipeExtras(builder, focuses);
     }

@@ -11,15 +11,14 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
-import mezz.jei.api.gui.widgets.IRecipeWidget;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -29,21 +28,22 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
+import tamaized.ae2jeiintegration.integration.modules.jei.Colors;
 import tamaized.ae2jeiintegration.integration.modules.jei.JEIPlugin;
-import tamaized.ae2jeiintegration.integration.modules.jei.drawables.DrawableHelper;
-import tamaized.ae2jeiintegration.integration.modules.jei.drawables.LabelDrawable;
 
-public class EntropyManipulatorCategory extends AbstractCategory<RecipeHolder<EntropyRecipe>> {
+public class EntropyManipulatorCategory extends AbstractRecipeCategory<RecipeHolder<EntropyRecipe>> {
     public static final RecipeType<RecipeHolder<EntropyRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(AERecipeTypes.ENTROPY);
+    private static final int RECIPE_WIDTH = 130;
 
     private final IDrawable blockDestroyOverlay;
     private final int centerX;
-    private final IRecipeWidget heatWidget;
-    private final IRecipeWidget coolWidget;
+    private final ModeExtension heatExtension;
+    private final ModeExtension coolExtension;
 
     public EntropyManipulatorCategory(IGuiHelper guiHelper) {
         super(
-            guiHelper,
+            RECIPE_TYPE,
+            AEItems.ENTROPY_MANIPULATOR.asItem().getDescription(),
             // We don't use an item drawable here because it would show the charge bar
             guiHelper.drawableBuilder(
                 AppEng.makeId("textures/item/entropy_manipulator.png"),
@@ -51,34 +51,33 @@ public class EntropyManipulatorCategory extends AbstractCategory<RecipeHolder<En
                 0,
                 16,
                 16).setTextureSize(16, 16).build(),
-            AEItems.ENTROPY_MANIPULATOR.asItem().getDescription(),
-            guiHelper.createBlankDrawable(130, 50)
+
+            RECIPE_WIDTH,
+            50
         );
         this.blockDestroyOverlay = guiHelper.createDrawable(JEIPlugin.TEXTURE, 0, 52, 16, 16);
         var iconHeat = guiHelper.createDrawable(JEIPlugin.TEXTURE, 0, 68, 6, 6);
         var iconCool = guiHelper.createDrawable(JEIPlugin.TEXTURE, 6, 68, 6, 6);
-        this.centerX = background.getWidth() / 2;
+        this.centerX = RECIPE_WIDTH / 2;
 
-        this.heatWidget = new ModeWidget(
-            guiHelper,
+        this.heatExtension = new ModeExtension(
             iconHeat,
             ItemModText.ENTROPY_MANIPULATOR_HEAT.text(EntropyManipulatorItem.ENERGY_PER_USE),
             ItemModText.RIGHT_CLICK,
-            centerX
+            RECIPE_WIDTH
         );
-        this.coolWidget = new ModeWidget(
-            guiHelper,
+        this.coolExtension = new ModeExtension(
             iconCool,
             ItemModText.ENTROPY_MANIPULATOR_COOL.text(EntropyManipulatorItem.ENERGY_PER_USE),
             ItemModText.SHIFT_RIGHT_CLICK,
-            centerX
+            RECIPE_WIDTH
         );
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<EntropyRecipe> holder, IFocusGroup focuses) {
         var recipe = holder.value();
-        var input = builder.addSlot(RecipeIngredientRole.INPUT, centerX - 36, 15)
+        var input = builder.addInputSlot(centerX - 36, 15)
             .setStandardSlotBackground();
         var inputBlock = recipe.getInput().block().map(EntropyRecipe.BlockInput::block).orElse(null);
         var inputFluid = recipe.getInput().fluid().map(EntropyRecipe.FluidInput::fluid).orElse(null);
@@ -103,14 +102,14 @@ public class EntropyManipulatorCategory extends AbstractCategory<RecipeHolder<En
             );
             x += 18;
         } else if (outputBlock != null || outputFluid != null) {
-            var output = builder.addSlot(RecipeIngredientRole.OUTPUT, x, 15)
+            var output = builder.addOutputSlot(x, 15)
                 .setStandardSlotBackground();
             setFluidOrBlockSlot(output, outputBlock, outputFluid);
             x += 18;
         }
 
         for (var drop : recipe.getDrops()) {
-            var output = builder.addSlot(RecipeIngredientRole.OUTPUT, x, 15)
+            var output = builder.addOutputSlot(x, 15)
                 .setStandardSlotBackground();
             output.addItemStack(drop);
             x += 18;
@@ -118,49 +117,45 @@ public class EntropyManipulatorCategory extends AbstractCategory<RecipeHolder<En
     }
 
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<EntropyRecipe> holder, IFocusGroup focuses) {
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<EntropyRecipe> holder, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
         var recipe = holder.value();
 
-        var widget = switch (recipe.getMode()) {
-            case HEAT -> heatWidget;
-            case COOL -> coolWidget;
+        var extension = switch (recipe.getMode()) {
+            case HEAT -> heatExtension;
+            case COOL -> coolExtension;
         };
 
-        builder.addWidget(widget);
+        extension.createRecipeExtras(builder);
     }
 
-    private static class ModeWidget implements IRecipeWidget {
-        private final ScreenPosition position;
+    private static class ModeExtension {
         private final IDrawableStatic icon;
-        private final LabelDrawable modeLabel;
-        private final IDrawable interactionText;
-        private final IDrawableStatic unfilledArrow;
+        private final int width;
+        private final Component modeText;
+        private final ItemModText interaction;
         private final int centerX;
 
-        public ModeWidget(IGuiHelper guiHelper, IDrawableStatic icon, Component modeText, ItemModText interaction, int centerX) {
-            this.centerX = centerX;
-            this.position = new ScreenPosition(0, 0);
+        public ModeExtension(IDrawableStatic icon, Component modeText, ItemModText interaction, int width) {
+            this.modeText = modeText;
+            this.interaction = interaction;
+            this.centerX = width / 2;
             this.icon = icon;
-            this.modeLabel = new LabelDrawable(modeText).bodyText();
-            this.interactionText = new LabelDrawable(interaction.text()).bodyText();
-            this.unfilledArrow = DrawableHelper.getUnfilledArrow(guiHelper);
+            this.width = width;
         }
 
-        @Override
-        public ScreenPosition getPosition() {
-            return position;
-        }
+        public void createRecipeExtras(IRecipeExtrasBuilder builder) {
+            builder.addRecipeArrow(centerX - 12, 14);
 
-        @Override
-        public void draw(GuiGraphics guiGraphics, double mouseX, double mouseY) {
-            int modeLabelCenterX = centerX + 4;
-            modeLabel.draw(guiGraphics, modeLabelCenterX, 2);
+            int modeLabelX = centerX - 36;
+            builder.addText(modeText, modeLabelX, 0, width - modeLabelX, 10)
+                .setColor(Colors.BODY);
 
-            int iconX = modeLabelCenterX + modeLabel.getX() - 9;
-            icon.draw(guiGraphics, iconX, 3);
+            int iconX = modeLabelX - 9;
+            builder.addDrawable(icon, iconX, 1);
 
-            unfilledArrow.draw(guiGraphics, centerX - (unfilledArrow.getWidth() / 2), 14);
-            interactionText.draw(guiGraphics, centerX, 38);
+            builder.addText(interaction.text(), 0, 38, width, 10)
+                .alignHorizontalCenter()
+                .setColor(Colors.BODY);
         }
     }
 
@@ -183,13 +178,8 @@ public class EntropyManipulatorCategory extends AbstractCategory<RecipeHolder<En
                 slot.addFluidStack(fluid);
             }
         } else if (block != null) {
-            slot.addItemStack(block.asItem().getDefaultInstance());
+            slot.addItemLike(block);
         }
-    }
-
-    @Override
-    public RecipeType<RecipeHolder<EntropyRecipe>> getRecipeType() {
-        return RECIPE_TYPE;
     }
 
     @Override

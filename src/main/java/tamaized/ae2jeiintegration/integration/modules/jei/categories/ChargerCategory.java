@@ -6,70 +6,57 @@ import appeng.core.definitions.AEBlocks;
 import appeng.recipes.AERecipeTypes;
 import appeng.recipes.handlers.ChargerRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
-import net.minecraft.client.gui.GuiGraphics;
+import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import tamaized.ae2jeiintegration.integration.modules.jei.drawables.DrawableHelper;
-import tamaized.ae2jeiintegration.integration.modules.jei.drawables.LabelDrawable;
+import tamaized.ae2jeiintegration.integration.modules.jei.Colors;
 
-public class ChargerCategory extends AbstractCategory<RecipeHolder<ChargerRecipe>> {
+public class ChargerCategory extends AbstractRecipeCategory<RecipeHolder<ChargerRecipe>> {
     public static final RecipeType<RecipeHolder<ChargerRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(AERecipeTypes.CHARGER);
-
-    private final IDrawableStatic unfilledArrow;
-    private final IDrawable turnsLabel;
 
     public ChargerCategory(IGuiHelper guiHelper) {
         super(
-            guiHelper,
-            AEBlocks.CHARGER,
+            RECIPE_TYPE,
             AEBlocks.CHARGER.stack().getHoverName(),
-            guiHelper.createBlankDrawable(130, 50)
+            guiHelper.createDrawableItemLike(AEBlocks.CHARGER),
+            130,
+            50
         );
-        this.unfilledArrow = DrawableHelper.getUnfilledArrow(guiHelper);
-
-        var turnCount = (ChargerBlockEntity.POWER_MAXIMUM_AMOUNT + CrankBlockEntity.POWER_PER_CRANK_TURN - 1)
-            / CrankBlockEntity.POWER_PER_CRANK_TURN;
-        MutableComponent turnsText = Component.literal(turnCount + " turns or " + ChargerBlockEntity.POWER_MAXIMUM_AMOUNT + " AE");
-        this.turnsLabel = new LabelDrawable(turnsText)
-            .bodyColor()
-            .noShadow()
-            .alignLeft();
-    }
-
-    @Override
-    public RecipeType<RecipeHolder<ChargerRecipe>> getRecipeType() {
-        return RECIPE_TYPE;
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<ChargerRecipe> holder, IFocusGroup focuses) {
         var recipe = holder.value();
 
-        builder.addSlot(RecipeIngredientRole.INPUT, 31, 8)
+        builder.addInputSlot(31, 8)
             .setStandardSlotBackground()
             .addIngredients(recipe.getIngredient());
 
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 81, 8)
+        builder.addOutputSlot(81, 8)
             .setStandardSlotBackground()
             .addItemStack(recipe.getResultItem());
 
         builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 3, 30)
-            .addItemStack(AEBlocks.CRANK.stack());
+            .addItemLike(AEBlocks.CRANK);
     }
 
     @Override
-    public void draw(RecipeHolder<ChargerRecipe> recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        unfilledArrow.draw(guiGraphics, 52, 8);
-        turnsLabel.draw(guiGraphics, 20, 35);
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<ChargerRecipe> recipe, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
+        builder.addRecipeArrow(52, 8);
+
+        var turnCount = (ChargerBlockEntity.POWER_MAXIMUM_AMOUNT + CrankBlockEntity.POWER_PER_CRANK_TURN - 1)
+            / CrankBlockEntity.POWER_PER_CRANK_TURN;
+        MutableComponent turnsText = Component.literal(turnCount + " turns or " + ChargerBlockEntity.POWER_MAXIMUM_AMOUNT + " AE");
+        builder.addText(turnsText, 20, 35, getWidth() - 20, 10)
+            .setColor(Colors.BODY);
     }
 
     @Override

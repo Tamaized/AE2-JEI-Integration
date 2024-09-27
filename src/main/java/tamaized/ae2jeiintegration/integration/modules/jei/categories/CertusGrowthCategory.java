@@ -13,9 +13,8 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import tamaized.ae2jeiintegration.integration.modules.jei.Colors;
 import tamaized.ae2jeiintegration.integration.modules.jei.drawables.CyclingDrawable;
-import tamaized.ae2jeiintegration.integration.modules.jei.widgets.LabelWidget;
-import tamaized.ae2jeiintegration.integration.modules.jei.widgets.WidgetFactory;
 
 import java.util.List;
 
@@ -48,22 +47,18 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
 
     public CertusGrowthCategory(IGuiHelper guiHelper) {
         super(
-            guiHelper,
+            TYPE,
+            ItemModText.CERTUS_QUARTZ_GROWTH.text(),
             CyclingDrawable.forItems(
                 guiHelper,
                 AEBlocks.SMALL_QUARTZ_BUD,
                 AEBlocks.MEDIUM_QUARTZ_BUD,
                 AEBlocks.LARGE_QUARTZ_BUD,
                 AEBlocks.QUARTZ_CLUSTER),
-            ItemModText.CERTUS_QUARTZ_GROWTH.text(),
-            guiHelper.createBlankDrawable(150, 60)
+            150, 
+            60
         );
-        this.centerX = background.getWidth() / 2;
-    }
-
-    @Override
-    public RecipeType<Page> getRecipeType() {
-        return TYPE;
+        this.centerX = 150 / 2;
     }
 
     @Override
@@ -97,11 +92,11 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
         @Override
         public void createRecipeExtras(IRecipeExtrasBuilder builder, IFocusGroup focuses) {
             Component text = ItemModText.QUARTZ_BUDS_GROW_ON_BUDDING_QUARTZ.text();
-            builder.addWidget(new LabelWidget(centerX, 0, text)
-                    .bodyText()
-                    .maxWidth(background.getWidth()));
-
-            builder.addWidget(WidgetFactory.unfilledArrow(guiHelper, centerX - 12, 25));
+            builder.addText(text, 0, 0, getWidth(), 20)
+                .alignHorizontalCenter()
+                .setColor(Colors.BODY);
+            
+            builder.addRecipeArrow(centerX - 12, 25);
         }
 
         @Override
@@ -110,7 +105,7 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_VARIANTS);
 
-            builder.addSlot(RecipeIngredientRole.OUTPUT, centerX + 40 - 18, 25)
+            builder.addOutputSlot(centerX + 40 - 18, 25)
                     .setStandardSlotBackground()
                     .addItemStacks(BUD_GROWTH_STAGES);
         }
@@ -134,16 +129,17 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
             } else {
                 text = ItemModText.FULLY_GROWN_BUDS_DROP_CRYSTALS.text();
             }
-            builder.addWidget(new LabelWidget(centerX, 0, text)
-                    .bodyText()
-                    .maxWidth(background.getWidth()));
 
-            builder.addWidget(WidgetFactory.unfilledArrow(guiHelper, centerX - 12, 25));
+            builder.addText(text, 0, 0, getWidth(), 20)
+                .alignHorizontalCenter()
+                .setColor(Colors.BODY);
+
+            builder.addRecipeArrow(centerX - 12, 25);
 
             if (page == Page.CLUSTER_LOOT) {
-                Component text1 = ItemModText.FORTUNE_APPLIES.text();
-                builder.addWidget(new LabelWidget(centerX, 50, text1)
-                        .bodyText());
+                builder.addText(ItemModText.FORTUNE_APPLIES.text(), 0, 50, getWidth(), 10)
+                    .alignHorizontalCenter()
+                    .setColor(Colors.BODY);
             }
         }
 
@@ -160,7 +156,7 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
                         AEBlocks.QUARTZ_CLUSTER.stack());
             }
 
-            builder.addSlot(RecipeIngredientRole.INPUT, centerX - 40, 25)
+            builder.addInputSlot(centerX - 40, 25)
                     .setStandardSlotBackground()
                     .addItemStacks(input);
 
@@ -170,7 +166,7 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
             } else {
                 finalResult = AEItems.CERTUS_QUARTZ_CRYSTAL.stack(4);
             }
-            builder.addSlot(RecipeIngredientRole.OUTPUT, centerX + 40 - 18, 25)
+            builder.addOutputSlot(centerX + 40 - 18, 25)
                     .setStandardSlotBackground()
                     .addItemStack(finalResult);
         }
@@ -183,30 +179,30 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
 
         @Override
         public void createRecipeExtras(IRecipeExtrasBuilder builder, IFocusGroup focuses) {
-            Component text1 = ItemModText.IMPERFECT_BUDDING_QUARTZ_DECAYS.text();
-            builder.addWidget(new LabelWidget(centerX, 0, text1)
-                    .bodyText()
-                    .maxWidth(background.getWidth()));
+            builder.addText(ItemModText.IMPERFECT_BUDDING_QUARTZ_DECAYS.text(), 0, 0, getWidth(), 20)
+                    .setColor(Colors.BODY)
+                    .alignHorizontalCenter();
 
-            builder.addWidget(WidgetFactory.unfilledArrow(guiHelper, centerX - 12, 30));
+            builder.addRecipeArrow(centerX - 12, 30);
 
             var decayChancePct = 100 / BuddingCertusQuartzBlock.DECAY_CHANCE;
             Component text = ItemModText.DECAY_CHANCE.text(decayChancePct);
-            builder.addWidget(new LabelWidget(centerX, 50, text)
-                    .bodyText());
+            builder.addText(text, 0, 50, getWidth(), 10)
+                    .setColor(Colors.BODY)
+                    .alignHorizontalCenter();
         }
 
         @Override
         public void buildSlots(IRecipeLayoutBuilder builder) {
-            var slot1 = builder.addSlot(RecipeIngredientRole.INPUT, centerX - 40, 30)
+            var input = builder.addInputSlot(centerX - 40, 30)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_VARIANTS);
 
-            var slot2 = builder.addSlot(RecipeIngredientRole.OUTPUT, centerX + 40 - 18, 30)
+            var output = builder.addOutputSlot(centerX + 40 - 18, 30)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_DECAY_ORDER);
 
-            builder.createFocusLink(slot1, slot2);
+            builder.createFocusLink(input, output);
         }
     }
 
@@ -216,26 +212,26 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
     private class BuddingQuartzMovingView implements View {
         @Override
         public void buildSlots(IRecipeLayoutBuilder builder) {
-            var slot1 = builder.addSlot(RecipeIngredientRole.INPUT, centerX - 40, 0)
+            var input = builder.addInputSlot(centerX - 40, 0)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_VARIANTS);
 
-            var slot2 = builder.addSlot(RecipeIngredientRole.OUTPUT, centerX + 40 - 18, 0)
+            var output = builder.addOutputSlot(centerX + 40 - 18, 0)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_DECAY_ORDER);
 
-            builder.createFocusLink(slot1, slot2);
+            builder.createFocusLink(input, output);
         }
 
         @Override
         public void createRecipeExtras(IRecipeExtrasBuilder builder, IFocusGroup focuses) {
-            builder.addWidget(WidgetFactory.unfilledArrow(guiHelper, centerX - 12, 0));
+            builder.addRecipeArrow(centerX - 12, 0);
 
             builder.addScrollBoxWidget(getWidth(), getHeight() - 20, 0, 20)
                 .setContents(List.of(
-                    ItemModText.BUDDING_QUARTZ_DECAYS_WHEN_BROKEN.text().withColor(0x7E7E7E),
-                    ItemModText.SILK_TOUCH_PREVENTS_DECAY_FOR_IMPERFECT.text().withColor(0x7E7E7E),
-                    ItemModText.SPATIAL_IO_NEVER_CAUSES_ANY_DECAY.text().withColor(0x7E7E7E)
+                    ItemModText.BUDDING_QUARTZ_DECAYS_WHEN_BROKEN.text().withColor(Colors.BODY),
+                    ItemModText.SILK_TOUCH_PREVENTS_DECAY_FOR_IMPERFECT.text().withColor(Colors.BODY),
+                    ItemModText.SPATIAL_IO_NEVER_CAUSES_ANY_DECAY.text().withColor(Colors.BODY)
                 ));
         }
     }
@@ -247,26 +243,25 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
         @Override
         public void createRecipeExtras(IRecipeExtrasBuilder builder, IFocusGroup focuses) {
             Component text = ItemModText.BUDDING_QUARTZ_CREATION_AND_WORLDGEN.text();
-            builder.addWidget(new LabelWidget(22, 13, text)
-                    .bodyText()
-                    .alignLeft()
-                    .maxWidth(background.getWidth() - 20));
+            builder.addText(text, 22, 0, getWidth() - 22, getHeight())
+                .alignVerticalCenter()
+                .setColor(Colors.BODY);
         }
 
         @Override
         public void buildSlots(IRecipeLayoutBuilder builder) {
             // Also include quartz blocks in the list, since those can spawn in meteorites
-            builder.addSlot(RecipeIngredientRole.INPUT, 1, 1)
+            builder.addInputSlot(1, 1)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_DECAY_ORDER);
 
-            builder.addSlot(RecipeIngredientRole.INPUT, 1, 22)
+            builder.addInputSlot(1, 22)
                     .setStandardSlotBackground()
-                    .addItemStack(AEItems.CERTUS_QUARTZ_CRYSTAL_CHARGED.stack());
+                    .addItemLike(AEItems.CERTUS_QUARTZ_CRYSTAL_CHARGED);
 
             builder.addSlot(RecipeIngredientRole.CATALYST, 1, 43)
                     .setStandardSlotBackground()
-                    .addItemStack(AEItems.METEORITE_COMPASS.stack());
+                    .addItemLike(AEItems.METEORITE_COMPASS);
         }
     }
 
@@ -277,21 +272,20 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
         @Override
         public void createRecipeExtras(IRecipeExtrasBuilder builder, IFocusGroup focuses) {
             Component text = ItemModText.FLAWLESS_BUDDING_QUARTZ_DESCRIPTION.text();
-            builder.addWidget(new LabelWidget(22, 13, text)
-                    .bodyText()
-                    .alignLeft()
-                    .maxWidth(background.getWidth() - 20));
+            builder.addText(text, 22, 0, getWidth() - 22, getHeight())
+                .alignVerticalCenter()
+                .setColor(Colors.BODY);
         }
 
         @Override
         public void buildSlots(IRecipeLayoutBuilder builder) {
-            builder.addSlot(RecipeIngredientRole.CATALYST, 1, 13)
+            builder.addSlot(RecipeIngredientRole.CATALYST, 1, 15)
                     .setStandardSlotBackground()
-                    .addItemStack(AEBlocks.FLAWLESS_BUDDING_QUARTZ.stack());
+                    .addItemLike(AEBlocks.FLAWLESS_BUDDING_QUARTZ);
 
-            builder.addSlot(RecipeIngredientRole.INPUT, 1, 33)
+            builder.addInputSlot(1, 35)
                     .setStandardSlotBackground()
-                    .addItemStack(AEItems.METEORITE_COMPASS.stack());
+                    .addItemLike(AEItems.METEORITE_COMPASS);
         }
     }
 
@@ -301,25 +295,28 @@ public class CertusGrowthCategory extends ViewBasedCategory<CertusGrowthCategory
     private class BuddingQuartzAccelerationView implements View {
         @Override
         public void createRecipeExtras(IRecipeExtrasBuilder builder, IFocusGroup focuses) {
-            var centerX = background.getWidth() / 2;
-
             Component text = ItemModText.CRYSTAL_GROWTH_ACCELERATORS_EFFECT.text();
-            builder.addWidget(new LabelWidget(centerX, 0, text)
-                    .bodyText()
-                    .maxWidth(background.getWidth()));
+            builder.addText(text, 0, 0, getWidth(), 38)
+                    .alignHorizontalCenter()
+                    .setLineSpacing(0)
+                    .setColor(Colors.BODY);
 
-            builder.addWidget(new LabelWidget(centerX, 45, Component.literal("+")));
+            builder.addText(Component.literal("+"), centerX - 8, 40, 16, 16)
+                .alignHorizontalCenter()
+                .alignVerticalCenter()
+                .setColor(0xFFFFFFFF)
+                .setShadow(true);
         }
 
         @Override
         public void buildSlots(IRecipeLayoutBuilder builder) {
-            builder.addSlot(RecipeIngredientRole.INPUT, centerX - 8 - 16, 40)
+            builder.addInputSlot(centerX - 8 - 16, 40)
                     .setStandardSlotBackground()
                     .addItemStacks(BUDDING_QUARTZ_VARIANTS);
 
             builder.addSlot(RecipeIngredientRole.CATALYST, centerX + 8, 40)
                     .setStandardSlotBackground()
-                    .addItemStack(AEBlocks.GROWTH_ACCELERATOR.stack());
+                    .addItemLike(AEBlocks.GROWTH_ACCELERATOR);
         }
     }
 }

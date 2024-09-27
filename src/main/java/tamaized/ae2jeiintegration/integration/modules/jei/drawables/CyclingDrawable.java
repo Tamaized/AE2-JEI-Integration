@@ -1,46 +1,38 @@
 package tamaized.ae2jeiintegration.integration.modules.jei.drawables;
 
-import java.util.Arrays;
-import java.util.List;
-
-import net.minecraft.Util;
+import mezz.jei.api.gui.ITickTimer;
+import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.helpers.IGuiHelper;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.level.ItemLike;
 
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.helpers.IGuiHelper;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A renderer that cycles through a list of item stacks.
  */
 public class CyclingDrawable implements IDrawable {
     private final List<IDrawable> stages;
-    private long nextFrame;
-    private int currentStage;
+    private final ITickTimer tickTimer;
 
-    public CyclingDrawable(List<IDrawable> stages) {
+    public CyclingDrawable(List<IDrawable> stages, ITickTimer tickTimer) {
         this.stages = stages;
+        this.tickTimer = tickTimer;
     }
 
     public static CyclingDrawable forItems(IGuiHelper guiHelper, ItemLike... items) {
-        return new CyclingDrawable(Arrays.stream(items)
-                .map(guiHelper::createDrawableItemLike)
-                .toList());
+        List<IDrawable> stages = Arrays.stream(items)
+            .map(guiHelper::createDrawableItemLike)
+            .toList();
+        ITickTimer tickTimer = guiHelper.createTickTimer(100, stages.size() - 1, false);
+        return new CyclingDrawable(stages, tickTimer);
     }
 
     @Override
     public void draw(GuiGraphics guiGraphics, int xOffset, int yOffset) {
-        var now = Util.getMillis();
-        if (now > nextFrame + 2000) {
-            currentStage++;
-            nextFrame = now;
-        }
-
-        if (currentStage >= stages.size()) {
-            currentStage = 0;
-        }
-
-        stages.get(currentStage).draw(guiGraphics, xOffset, yOffset);
+        IDrawable stage = stages.get(tickTimer.getValue());
+        stage.draw(guiGraphics, xOffset, yOffset);
     }
 
     @Override

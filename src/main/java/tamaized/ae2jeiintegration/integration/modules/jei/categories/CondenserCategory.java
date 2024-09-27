@@ -12,12 +12,14 @@ import appeng.core.localization.ButtonToolTips;
 import appeng.items.materials.StorageComponentItem;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
+import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +31,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public class CondenserCategory extends AbstractCategory<CondenserOutput> {
+public class CondenserCategory extends AbstractRecipeCategory<CondenserOutput> {
 
     private static final String TITLE_TRANSLATION_KEY = "block.ae2.condenser";
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "textures/guis/condenser.png");
@@ -41,14 +43,17 @@ public class CondenserCategory extends AbstractCategory<CondenserOutput> {
 
     private final Map<CondenserOutput, Icon> buttonIcons;
     private final Map<CondenserOutput, ResourceLocation> resourceLocations;
+    private final IDrawable background;
 
     public CondenserCategory(IGuiHelper guiHelper) {
         super(
-            guiHelper,
-            AEBlocks.CONDENSER,
+            RECIPE_TYPE,
             Component.translatable(TITLE_TRANSLATION_KEY),
-            guiHelper.createDrawable(TEXTURE, 48, 25, 96, 48)
+            guiHelper.createDrawableItemLike(AEBlocks.CONDENSER),
+            96,
+            48
         );
+        this.background = guiHelper.createDrawable(TEXTURE, 48, 25, 96, 48);
         this.progress = guiHelper.drawableBuilder(TEXTURE, 176, 0, 6, 18)
                 .addPadding(0, 0, 72, 0)
                 .buildAnimated(40, IDrawableAnimated.StartDirection.BOTTOM, false);
@@ -72,13 +77,9 @@ public class CondenserCategory extends AbstractCategory<CondenserOutput> {
     }
 
     @Override
-    public RecipeType<CondenserOutput> getRecipeType() {
-        return RECIPE_TYPE;
-    }
-
-    @Override
     public void draw(CondenserOutput recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX,
             double mouseY) {
+        this.background.draw(guiGraphics);
         this.progress.draw(guiGraphics);
 
         // This is shown on the "input slot" for condenser operations to indicate that any item can be used
@@ -94,7 +95,7 @@ public class CondenserCategory extends AbstractCategory<CondenserOutput> {
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, CondenserOutput recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 57, 27)
+        builder.addOutputSlot(57, 27)
                 .addItemStack(getOutput(recipe));
 
         // Get all storage cells and cycle them through a catalyst slot
