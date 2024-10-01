@@ -4,7 +4,6 @@ import appeng.core.AppEng;
 import appeng.core.definitions.AEParts;
 import appeng.core.localization.ItemModText;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -12,7 +11,6 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import tamaized.ae2jeiintegration.integration.modules.jei.recipes.AttunementRecipe;
 
@@ -51,8 +49,9 @@ public class AttunementCategory extends AbstractRecipeCategory<AttunementRecipe>
     }
 
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, AttunementRecipe recipe, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
-		builder.addRecipeArrow(getWidth() / 2 - 12, getHeight() / 2 - 9);
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, AttunementRecipe recipe, IFocusGroup focuses) {
+		builder.addRecipeArrow()
+            .setPosition(getWidth() / 2 - 12, getHeight() / 2 - 9);
     }
 
     @Override

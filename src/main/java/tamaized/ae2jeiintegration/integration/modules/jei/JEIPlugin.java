@@ -51,6 +51,7 @@ import tamaized.ae2jeiintegration.integration.modules.jei.transfer.UseCraftingRe
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @JeiPlugin
 public class JEIPlugin implements IModPlugin {
@@ -122,8 +123,7 @@ public class JEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        var level = Minecraft.getInstance().level;
-        assert level != null;
+        var level = Objects.requireNonNull(Minecraft.getInstance().level);
         var recipeManager = level.getRecipeManager();
 
         registration.addRecipes(InscriberRecipeCategory.RECIPE_TYPE, recipeManager.getAllRecipesFor(AERecipeTypes.INSCRIBER));
@@ -148,12 +148,16 @@ public class JEIPlugin implements IModPlugin {
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(AEBlocks.CONDENSER, CondenserCategory.RECIPE_TYPE);
         registration.addRecipeCatalyst(AEBlocks.INSCRIBER, InscriberRecipeCategory.RECIPE_TYPE);
-        registration.addRecipeCatalyst(AEParts.CRAFTING_TERMINAL, RecipeTypes.CRAFTING);
-        registration.addRecipeCatalyst(AEItems.WIRELESS_CRAFTING_TERMINAL, RecipeTypes.CRAFTING);
+        registration.addRecipeCatalysts(RecipeTypes.CRAFTING,
+            AEParts.CRAFTING_TERMINAL,
+            AEItems.WIRELESS_CRAFTING_TERMINAL
+        );
 
         // Both the charger and crank will be used as catalysts here to make it more discoverable
-        registration.addRecipeCatalyst(AEBlocks.CHARGER, ChargerCategory.RECIPE_TYPE);
-        registration.addRecipeCatalyst(AEBlocks.CRANK, ChargerCategory.RECIPE_TYPE);
+        registration.addRecipeCatalysts(ChargerCategory.RECIPE_TYPE,
+            AEBlocks.CHARGER,
+            AEBlocks.CRANK
+        );
 
         registration.addRecipeCatalyst(AEItems.ENTROPY_MANIPULATOR, EntropyManipulatorCategory.RECIPE_TYPE);
     }

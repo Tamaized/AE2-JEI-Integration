@@ -6,7 +6,8 @@ import appeng.core.localization.ItemModText;
 import appeng.recipes.AERecipeTypes;
 import appeng.recipes.transform.TransformRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.placement.HorizontalAlignment;
+import mezz.jei.api.gui.placement.VerticalAlignment;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.neoforge.NeoForgeTypes;
@@ -84,13 +85,13 @@ public class TransformCategory extends AbstractRecipeCategory<RecipeHolder<Trans
     }
 
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<TransformRecipe> holder, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<TransformRecipe> holder, IFocusGroup focuses) {
         var recipe = holder.value();
 
         // Second column is arrow pointing into water
-        builder.addRecipeArrow(25, 23);
+        builder.addRecipeArrow().setPosition(27, 23);
         // Fourth column is arrow pointing to results
-        builder.addRecipeArrow(76, 23);
+        builder.addRecipeArrow().setPosition(80, 23);
 
         Component circumstance;
         if (recipe.circumstance.isExplosion()) {
@@ -100,9 +101,10 @@ public class TransformCategory extends AbstractRecipeCategory<RecipeHolder<Trans
         }
 
         // Text label describing the transform circumstances
-        builder.addText(circumstance, 24, 0, getWidth() - 48, 20)
-            .alignHorizontalCenter()
-            .alignVerticalCenter()
+        builder.addText(circumstance,getWidth() - 48, 20)
+            .setPosition(24, 0)
+            .setTextAlignment(HorizontalAlignment.CENTER)
+            .setTextAlignment(VerticalAlignment.CENTER)
             .setColor(Colors.BODY);
     }
 

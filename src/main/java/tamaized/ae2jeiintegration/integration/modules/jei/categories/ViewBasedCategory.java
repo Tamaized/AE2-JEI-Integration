@@ -2,7 +2,6 @@ package tamaized.ae2jeiintegration.integration.modules.jei.categories;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeType;
@@ -24,7 +23,7 @@ public abstract class ViewBasedCategory<T> extends AbstractRecipeCategory<T> {
     }
 
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses) {
         var view = getView(recipe);
         view.createRecipeExtras(builder, focuses);
     }

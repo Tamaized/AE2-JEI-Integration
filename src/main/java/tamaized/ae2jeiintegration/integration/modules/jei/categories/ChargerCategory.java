@@ -6,6 +6,7 @@ import appeng.core.definitions.AEBlocks;
 import appeng.recipes.AERecipeTypes;
 import appeng.recipes.handlers.ChargerRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -49,13 +50,14 @@ public class ChargerCategory extends AbstractRecipeCategory<RecipeHolder<Charger
     }
 
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<ChargerRecipe> recipe, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
-        builder.addRecipeArrow(52, 8);
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<ChargerRecipe> recipe, IFocusGroup focuses) {
+        builder.addRecipeArrow().setPosition(52, 8);
 
         var turnCount = (ChargerBlockEntity.POWER_MAXIMUM_AMOUNT + CrankBlockEntity.POWER_PER_CRANK_TURN - 1)
             / CrankBlockEntity.POWER_PER_CRANK_TURN;
         MutableComponent turnsText = Component.literal(turnCount + " turns or " + ChargerBlockEntity.POWER_MAXIMUM_AMOUNT + " AE");
-        builder.addText(turnsText, 20, 35, getWidth() - 20, 10)
+        builder.addText(turnsText,getWidth() - 20, 10)
+            .setPosition(20, 35)
             .setColor(Colors.BODY);
     }
 

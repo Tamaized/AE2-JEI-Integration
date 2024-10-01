@@ -11,7 +11,7 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.placement.HorizontalAlignment;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -117,7 +117,7 @@ public class EntropyManipulatorCategory extends AbstractRecipeCategory<RecipeHol
     }
 
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<EntropyRecipe> holder, IRecipeSlotsView recipeSlotsView, IFocusGroup focuses) {
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<EntropyRecipe> holder, IFocusGroup focuses) {
         var recipe = holder.value();
 
         var extension = switch (recipe.getMode()) {
@@ -144,17 +144,19 @@ public class EntropyManipulatorCategory extends AbstractRecipeCategory<RecipeHol
         }
 
         public void createRecipeExtras(IRecipeExtrasBuilder builder) {
-            builder.addRecipeArrow(centerX - 12, 14);
+            builder.addRecipeArrow().setPosition(centerX - 12, 14);
 
             int modeLabelX = centerX - 36;
-            builder.addText(modeText, modeLabelX, 0, width - modeLabelX, 10)
+            builder.addText(modeText,width - modeLabelX, 10)
+                .setPosition(modeLabelX, 0)
                 .setColor(Colors.BODY);
 
             int iconX = modeLabelX - 9;
             builder.addDrawable(icon, iconX, 1);
 
-            builder.addText(interaction.text(), 0, 38, width, 10)
-                .alignHorizontalCenter()
+            builder.addText(interaction.text(), width, 10)
+                .setPosition(0, 38)
+                .setTextAlignment(HorizontalAlignment.CENTER)
                 .setColor(Colors.BODY);
         }
     }

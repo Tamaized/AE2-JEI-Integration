@@ -11,7 +11,6 @@ import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,7 +20,6 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class InscriberRecipeCategory extends AbstractRecipeCategory<RecipeHolder<InscriberRecipe>> {
 
-    private static final String TITLE_TRANSLATION_KEY = "block.ae2.inscriber";
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "textures/guis/inscriber.png");
 
     public static final RecipeType<RecipeHolder<InscriberRecipe>> RECIPE_TYPE = RecipeType.createFromVanilla(AERecipeTypes.INSCRIBER);
@@ -32,7 +30,7 @@ public class InscriberRecipeCategory extends AbstractRecipeCategory<RecipeHolder
     public InscriberRecipeCategory(IGuiHelper guiHelper) {
         super(
             RECIPE_TYPE,
-            Component.translatable(TITLE_TRANSLATION_KEY),
+            Component.translatable( "block.ae2.inscriber"),
             guiHelper.createDrawableItemLike(AEBlocks.INSCRIBER),
             105,
             54

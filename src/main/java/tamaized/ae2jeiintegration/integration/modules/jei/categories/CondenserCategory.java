@@ -25,6 +25,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import tamaized.ae2jeiintegration.integration.modules.jei.drawables.DrawableIcon;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -40,8 +41,10 @@ public class CondenserCategory extends AbstractRecipeCategory<CondenserOutput> {
             CondenserOutput.class);
 
     private final IDrawableAnimated progress;
+    private final IDrawable backgroundTrash;
+    private final IDrawable toolbarButtonBackground;
 
-    private final Map<CondenserOutput, Icon> buttonIcons;
+    private final Map<CondenserOutput, IDrawable> buttonIcons;
     private final Map<CondenserOutput, ResourceLocation> resourceLocations;
     private final IDrawable background;
 
@@ -57,10 +60,12 @@ public class CondenserCategory extends AbstractRecipeCategory<CondenserOutput> {
         this.progress = guiHelper.drawableBuilder(TEXTURE, 176, 0, 6, 18)
                 .addPadding(0, 0, 72, 0)
                 .buildAnimated(40, IDrawableAnimated.StartDirection.BOTTOM, false);
+        this.backgroundTrash = new DrawableIcon(Icon.BACKGROUND_TRASH);
+        this.toolbarButtonBackground = new DrawableIcon(Icon.TOOLBAR_BUTTON_BACKGROUND);
 
         this.buttonIcons = new EnumMap<>(CondenserOutput.class);
-        this.buttonIcons.put(CondenserOutput.MATTER_BALLS, Icon.CONDENSER_OUTPUT_MATTER_BALL);
-        this.buttonIcons.put(CondenserOutput.SINGULARITY, Icon.CONDENSER_OUTPUT_SINGULARITY);
+        this.buttonIcons.put(CondenserOutput.MATTER_BALLS, new DrawableIcon(Icon.CONDENSER_OUTPUT_MATTER_BALL));
+        this.buttonIcons.put(CondenserOutput.SINGULARITY, new DrawableIcon(Icon.CONDENSER_OUTPUT_SINGULARITY));
 
         this.resourceLocations = new EnumMap<>(CondenserOutput.class);
         this.resourceLocations.put(CondenserOutput.TRASH, ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID, "trash"));
@@ -83,13 +88,13 @@ public class CondenserCategory extends AbstractRecipeCategory<CondenserOutput> {
         this.progress.draw(guiGraphics);
 
         // This is shown on the "input slot" for condenser operations to indicate that any item can be used
-        Icon.BACKGROUND_TRASH.getBlitter().dest(3, 27).blit(guiGraphics);
+        this.backgroundTrash.draw(guiGraphics, 3, 27);
 
-        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(80, 26).blit(guiGraphics);
+        this.toolbarButtonBackground.draw(guiGraphics, 80, 26);
 
         var buttonIcon = this.buttonIcons.get(recipe);
         if (buttonIcon != null) {
-            buttonIcon.getBlitter().dest(81, 27).blit(guiGraphics);
+            buttonIcon.draw(guiGraphics, 81, 27);
         }
     }
 
