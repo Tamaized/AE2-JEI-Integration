@@ -79,10 +79,10 @@ class GhostIngredientHandler implements IGhostIngredientHandler<AEBaseScreen<?>>
 
     private static class ItemSlotTarget<I> implements Target<I> {
         private final IIngredientType<I> type;
-        private final AppEngSlot slot;
+        private final FakeSlot slot;
         private final Rect2i area;
 
-        public ItemSlotTarget(IIngredientType<I> type, AEBaseScreen<?> screen, AppEngSlot slot) {
+        public ItemSlotTarget(IIngredientType<I> type, AEBaseScreen<?> screen, FakeSlot slot) {
             this.type = type;
             this.slot = slot;
             this.area = new Rect2i(screen.getGuiLeft() + slot.x, screen.getGuiTop() + slot.y, 16, 16);
@@ -96,10 +96,8 @@ class GhostIngredientHandler implements IGhostIngredientHandler<AEBaseScreen<?>>
         @Override
         public void accept(I ingredient) {
             var wrapped = wrapDraggedItem(type, ingredient);
-
             if (wrapped != null) {
-                PacketDistributor.sendToServer(new InventoryActionPacket(InventoryAction.SET_FILTER,
-                        slot.index, wrapped));
+                slot.setFilterTo(wrapped);
             }
         }
     }
