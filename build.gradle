@@ -73,6 +73,7 @@ dependencies {
     implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
 
     compileOnly("curse.maven:ae2wtlib-459929:6437277")
+    runtimeOnly("curse.maven:merequester-688367:6935673")
 }
 
 tasks.withType(ProcessResources).configureEach {
